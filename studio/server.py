@@ -116,6 +116,33 @@ def detect_asset_root() -> str:
             continue
     return ""
 
+
+# ── Output folder (user-selectable) ──────────────────────────────────
+# Finished deliverables default to FINAL_DIR ("Final Output/"). The user can
+# redirect them to any local folder (e.g. a Google Drive path) from the app.
+# Persisted here; read by the streamlined finalizer and surfaced to the client
+# so the Variants/Dice prompts write to the same place. NOTE: the in-app Files
+# browser can only preview outputs that live under the project root; external
+# folders still receive the files, and each job reports its exact output path.
+OUTPUT_CONFIG_FILE = EDIT_DIR / "output_config.json"
+
+
+def _load_output_dir() -> str:
+    try:
+        data = json.loads(OUTPUT_CONFIG_FILE.read_text(encoding="utf-8"))
+        return (data.get("dir") or "").strip()
+    except Exception:  # noqa: BLE001
+        return ""
+
+
+def output_root() -> Path:
+    """Resolved destination for finished deliverables (custom folder if set,
+    else the default Final Output/)."""
+    custom = _load_output_dir()
+    if custom:
+        return Path(heal_drive_letter(custom))
+    return FINAL_DIR
+
 # ── Model routing (cost-optimization Workstream A1) ──────────────────
 # Job type → Claude model, so copywriting/deterministic-render jobs run on
 # Sonnet/Haiku and only genuine multi-step reasoning gets Opus. Config in
@@ -811,6 +838,37 @@ async def asset_root():
     regardless of drive letter or OS."""
     root = detect_asset_root()
     return {"root": root or None, "found": bool(root)}
+
+
+@app.get("/api/output-dir")
+async def get_output_dir():
+    """Where finished deliverables are saved (custom folder or default)."""
+    custom = _load_output_dir()
+    return {"dir": custom or None,
+            "resolved": str(output_root()),
+            "default": str(FINAL_DIR),
+            "is_custom": bool(custom)}
+
+
+@app.post("/api/output-dir")
+async def set_output_dir(payload: dict):
+    """Set (or clear) the output folder. Empty/absent `dir` resets to default.
+    The folder is created if it doesn't exist."""
+    raw = (payload.get("dir") or "").strip()
+    if not raw:
+        try:
+            OUTPUT_CONFIG_FILE.unlink()
+        except FileNotFoundError:
+            pass
+        return {"dir": None, "resolved": str(FINAL_DIR), "is_custom": False}
+    p = Path(heal_drive_letter(raw))
+    try:
+        p.mkdir(parents=True, exist_ok=True)
+    except OSError as e:
+        raise HTTPException(400, f"cannot use that folder: {e}")
+    OUTPUT_CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
+    OUTPUT_CONFIG_FILE.write_text(json.dumps({"dir": str(p)}, indent=2), encoding="utf-8")
+    return {"dir": str(p), "resolved": str(p), "is_custom": True}
 
 
 # ============================================================================
@@ -1930,7 +1988,7 @@ async def streamlined_ad(payload: dict):
             # hook, per Sean). The edit run stays under videos/edit/ so the
             # timeline dock can still open and re-render it.
             safe_hook = re.sub(r"[^\w\s-]", "", hook).strip().rstrip(".:")[:60].strip() or run_name
-            final_dir = FINAL_DIR / safe_hook
+            final_dir = output_root() / safe_hook
             final_dir.mkdir(parents=True, exist_ok=True)
             final_path = final_dir / f"ad_{run_name.removeprefix('streamlined_')}.mp4"
             shutil.copy2(out, final_path)

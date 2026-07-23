@@ -14,7 +14,26 @@
        ships focused on Variants + Streamlined Ads. Fully reversible — nothing is
        deleted. Add ?full=1 to the URL (or set localStorage.kino_full='1') to
        reveal the complete studio again. -->
-  <style>.simple-mode [data-simple-hide]{display:none !important;}</style>
+  <style>
+    .simple-mode [data-simple-hide]{display:none !important;}
+    /* Output-folder chooser (sidebar) */
+    .output-zone{padding:12px 14px;border-top:1px solid rgba(255,255,255,.08);}
+    .output-zone .team-label{margin-bottom:6px;}
+    .output-row{display:flex;gap:6px;}
+    .output-dir-input{flex:1;min-width:0;background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);color:inherit;border-radius:6px;
+      padding:6px 8px;font-size:12px;}
+    .output-zone .fpick-btn{background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);border-radius:6px;color:inherit;
+      cursor:pointer;padding:0 9px;}
+    .output-actions{display:flex;align-items:center;gap:10px;margin-top:6px;}
+    .output-save-btn{background:#1e6fe0;border:none;color:#fff;border-radius:6px;
+      padding:5px 12px;cursor:pointer;font-size:12px;}
+    .output-save-btn:hover{background:#2a7ef0;}
+    .output-reset-btn{background:none;border:none;color:rgba(255,255,255,.5);
+      cursor:pointer;font-size:11px;text-decoration:underline;padding:0;}
+    .output-status{font-size:11px;color:rgba(255,255,255,.5);margin-left:auto;}
+  </style>
   <script>
     (function(){
       try{
@@ -102,6 +121,23 @@
         <span class="dice-label">Streamlined Ad</span>
         <span class="dice-sub">hook · bullets · CTA</span>
       </button>
+    </div>
+
+    <!-- ── OUTPUT FOLDER ── where finished deliverables are saved -->
+    <div class="output-zone">
+      <div class="team-label">OUTPUT FOLDER</div>
+      <div class="output-row">
+        <input type="text" id="output-dir-input" class="output-dir-input"
+               placeholder="Final Output (default)" spellcheck="false" />
+        <button class="fpick-btn" data-target="output-dir-input" data-fpick-files="0"
+                type="button" title="Choose a folder">📁</button>
+      </div>
+      <div class="output-actions">
+        <button id="output-dir-save" type="button" class="output-save-btn">Save</button>
+        <button id="output-dir-reset" type="button" class="output-reset-btn"
+                title="Reset to the default Final Output folder">reset</button>
+        <span id="output-dir-status" class="output-status"></span>
+      </div>
     </div>
 
     <div class="sidebar-footer">

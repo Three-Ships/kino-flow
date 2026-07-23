@@ -3718,6 +3718,48 @@ setInterval(refreshFiles, 6000);
   }).observe(document.body, { childList: true, subtree: true });
 })();
 
+// ── Output folder chooser (sidebar) ─────────────────────────────────
+// Lets the user pick where finished deliverables are saved. Seeds OUTPUT_ROOT
+// (used by the Variants prompt) and persists via /api/output-dir (read by the
+// server-side Streamlined finalizer).
+(function () {
+  const input   = document.getElementById('output-dir-input');
+  const saveBtn = document.getElementById('output-dir-save');
+  const resetBtn = document.getElementById('output-dir-reset');
+  const statusEl = document.getElementById('output-dir-status');
+  if (!input && !saveBtn) return;               // control not present
+  const setStatus = (m) => { if (statusEl) statusEl.textContent = m || ''; };
+
+  async function load() {
+    try {
+      const r = await fetch('/api/output-dir');
+      if (!r.ok) return;
+      const d = await r.json();
+      OUTPUT_ROOT = d.dir || 'Final Output';
+      if (input) input.value = d.dir || '';
+      setStatus(d.is_custom ? 'custom' : 'default');
+    } catch (e) { /* keep default */ }
+  }
+  async function save(dir) {
+    setStatus('saving…');
+    try {
+      const r = await fetch('/api/output-dir', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ dir: dir || '' }),
+      });
+      const d = await r.json();
+      if (!r.ok) { setStatus(d.detail || 'error'); return; }
+      OUTPUT_ROOT = d.dir || 'Final Output';
+      if (input) input.value = d.dir || '';
+      setStatus(d.is_custom ? 'saved ✓' : 'reset ✓');
+    } catch (e) { setStatus('error'); }
+  }
+  if (saveBtn)  saveBtn.addEventListener('click', () => save(input ? input.value.trim() : ''));
+  if (resetBtn) resetBtn.addEventListener('click', () => save(''));
+  load();
+})();
+
 // ============================================================
 // MUSIC / SFX TAB
 // ============================================================
@@ -3786,6 +3828,10 @@ const TEAMS = {
   },
 };
 const TEAM_KEY = 'veditor.team.v1';
+// Where finished deliverables are saved. Default is the relative "Final Output"
+// (resolved under the project root, unchanged behavior). The sidebar chooser
+// (below) overrides it with a user-picked folder, seeded from /api/output-dir.
+let OUTPUT_ROOT = 'Final Output';
 function loadTeam() {
   try { return localStorage.getItem(TEAM_KEY) || ''; } catch { return ''; }
 }
@@ -4883,7 +4929,7 @@ Confirm the final output path (\`${outFile}\`), duration, and file size.`;
     const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
     // Final deliverables go to "Final Output/<run>/" in the project root (easy
     // to find); variant_factory keeps its intermediates in videos/edit/variant_tmp/.
-    const outDir = `Final Output/variants_${ts}`;
+    const outDir = `${OUTPUT_ROOT}/variants_${ts}`;
 
     // HeyGen avatar hook — reads the saved Avatar-tab picker state. When on,
     // each variant opens with a 3–5s talking-head avatar speaking ONLY the
