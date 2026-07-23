@@ -1,0 +1,266 @@
+name: Windows render verification
+
+# Manually triggered smoke test that renders a HyperFrames composition on a
+# real Windows runner. Proves the PR #336 `where ffmpeg` fix actually works
+# end-to-end: FFmpeg is discovered natively on Windows, Chrome is installed
+# and launched, frames are captured, and an MP4 is produced — without Docker
+# or WSL.
+
+on:
+  pull_request:
+    # `edited` is required so the workflow re-fires when a PR's base ref is
+    # set back to `main` after a Graphite stack restack momentarily flips
+    # the base off of `main`. Without it, `pull_request` triggers are not
+    # re-evaluated on `base_ref_changed`, leaving required checks skipped
+    # for that head SHA forever.
+    types: [opened, synchronize, reopened, edited]
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git ref to render (branch / tag / SHA)."
+        required: false
+        default: "main"
+
+concurrency:
+  group: windows-render-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+    steps:
+      # Force git-based change detection instead of the pull_request REST API.
+      # The API path can fail the workflow on transient listFiles timeouts
+      # before the Windows render jobs even start.
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+      - uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4
+        id: filter
+        with:
+          token: ""
+          filters: |
+            code:
+              - "packages/**"
+              - "scripts/**"
+              - "package.json"
+              - "bun.lock"
+              - ".github/workflows/windows-render.yml"
+
+  render-windows:
+    name: Render on windows-latest
+    needs: changes
+    if: needs.changes.outputs.code == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ github.event.inputs.ref }}
+          lfs: true
+
+      - name: Show platform info
+        shell: pwsh
+        run: |
+          Write-Host "OS: $([System.Environment]::OSVersion.VersionString)"
+          Write-Host "PowerShell: $($PSVersionTable.PSVersion)"
+          Write-Host "Runner: windows-latest"
+
+      # -----------------------------------------------------------------
+      # Install FFmpeg via the shared composite action so the install logic
+      # stays identical between this job and `test-windows` below. See
+      # .github/actions/install-ffmpeg-windows for why we bypass Chocolatey.
+      # -----------------------------------------------------------------
+      - name: Install FFmpeg
+        uses: ./.github/actions/install-ffmpeg-windows
+
+      # -----------------------------------------------------------------
+      # Verify FFmpeg feature inventory.
+      #
+      # The engine shells out to a fixed set of encoders (libx264 for MP4,
+      # libx265 for HEVC, libvpx-vp9 for WebM, prores_ks for transparent
+      # MOV, aac for audio), muxers (mp4 / mov / webm), and demuxers
+      # (image2pipe for streaming RGBA frames, rawvideo for HDR PQ frames,
+      # mov,mp4 for video frame extraction). Some of these are GPL-only,
+      # so a future build swap could silently drop one and break a code
+      # path the canary render doesn't exercise. Fail fast here instead.
+      # -----------------------------------------------------------------
+      - name: Verify FFmpeg feature inventory
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          function Assert-FfmpegFeature {
+            param(
+              [Parameter(Mandatory)] [string] $Listing,
+              [Parameter(Mandatory)] [string] $Name,
+              [Parameter(Mandatory)] [string] $Kind
+            )
+            # `ffmpeg -encoders` etc. emit one feature per line as
+            # `<flags> <name> <description>`, so a whitespace boundary on
+            # each side is enough to disambiguate (e.g. `mov` vs `movflags`).
+            $pattern = "(^|\s)$([regex]::Escape($Name))(\s|$)"
+            if ($Listing -notmatch $pattern) {
+              throw "Required FFmpeg $Kind '$Name' not present in this build"
+            }
+            Write-Host "  ok: $Kind $Name"
+          }
+
+          Write-Host "--- encoders ---"
+          $encoders = (& ffmpeg -hide_banner -encoders 2>&1) -join "`n"
+          foreach ($enc in @('libx264', 'libx265', 'libvpx-vp9', 'prores_ks', 'aac')) {
+            Assert-FfmpegFeature -Listing $encoders -Name $enc -Kind 'encoder'
+          }
+
+          Write-Host "--- muxers ---"
+          $muxers = (& ffmpeg -hide_banner -muxers 2>&1) -join "`n"
+          foreach ($mux in @('mp4', 'mov', 'webm')) {
+            Assert-FfmpegFeature -Listing $muxers -Name $mux -Kind 'muxer'
+          }
+
+          Write-Host "--- demuxers ---"
+          $demuxers = (& ffmpeg -hide_banner -demuxers 2>&1) -join "`n"
+          foreach ($dem in @('image2pipe', 'rawvideo', 'mov,mp4,m4a,3gp,3g2,mj2')) {
+            Assert-FfmpegFeature -Listing $demuxers -Name $dem -Kind 'demuxer'
+          }
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+
+      - name: Install Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        shell: pwsh
+        run: bun install --frozen-lockfile
+
+      - name: Build all packages
+        shell: pwsh
+        run: bun run build
+
+      # -----------------------------------------------------------------
+      # Prove the PR #336 fix: hyperframes doctor exercises findFFmpeg()
+      # and whichBinary() — both must pass on Windows without workarounds.
+      # -----------------------------------------------------------------
+      - name: hyperframes doctor (verifies `where ffmpeg` fix)
+        shell: pwsh
+        run: node packages/cli/dist/cli.js doctor
+
+      - name: Scaffold canary composition
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "$env:RUNNER_TEMP\windows-canary" | Out-Null
+          cd "$env:RUNNER_TEMP\windows-canary"
+          node "$env:GITHUB_WORKSPACE\packages\cli\dist\cli.js" init canary --example blank --non-interactive --skip-skills
+
+          $fixtures = "$env:GITHUB_WORKSPACE\.github\workflows\fixtures"
+          Copy-Item "$fixtures\windows-canary.html" "canary\index.html" -Force
+
+      - name: Render canary composition
+        shell: pwsh
+        run: |
+          cd "$env:RUNNER_TEMP\windows-canary\canary"
+          node "$env:GITHUB_WORKSPACE\packages\cli\dist\cli.js" render `
+            --fps 30 `
+            --quality draft `
+            --workers 2 `
+            --output renders\canary.mp4
+
+      - name: Verify rendered MP4
+        shell: pwsh
+        run: |
+          $mp4 = "$env:RUNNER_TEMP\windows-canary\canary\renders\canary.mp4"
+          if (-not (Test-Path $mp4)) { throw "canary.mp4 not produced" }
+
+          $probe = ffprobe -v error -select_streams v:0 `
+            -show_entries stream=width,height,r_frame_rate -show_entries format=duration `
+            -of default=noprint_wrappers=1 $mp4
+          Write-Host $probe
+
+          # Parse probe output
+          $width    = ($probe | Select-String '^width=(.+)$').Matches.Groups[1].Value
+          $height   = ($probe | Select-String '^height=(.+)$').Matches.Groups[1].Value
+          $fps      = ($probe | Select-String '^r_frame_rate=(.+)$').Matches.Groups[1].Value
+          $duration = [double]($probe | Select-String '^duration=(.+)$').Matches.Groups[1].Value
+
+          if ([int]$width  -ne 1920) { throw "expected 1920 width, got $width" }
+          if ([int]$height -ne 1080) { throw "expected 1080 height, got $height" }
+          if ($fps -ne "30/1")       { throw "expected 30fps, got $fps" }
+          if ($duration -lt 7.5 -or $duration -gt 8.5) { throw "expected ~8s duration, got $duration" }
+
+          Write-Host "canary.mp4 ok: ${width}x${height} @ $fps, ${duration}s"
+
+      - name: Upload rendered MP4 artifact
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: windows-render-${{ github.run_id }}
+          path: ${{ runner.temp }}/windows-canary/canary/renders/canary.mp4
+          if-no-files-found: error
+          retention-days: 7
+
+  # -------------------------------------------------------------------
+  # Unit-test suites on Windows. Mirrors the Linux `test` job in ci.yml
+  # so we catch Windows-specific regressions (path separators, shell
+  # invocations, CRLF, file URLs, etc.) in existing vitest suites.
+  # The producer package is skipped because its tests require Docker /
+  # Linux-only tooling (Dockerfile.test, LFS golden MP4 baselines).
+  # -------------------------------------------------------------------
+  test-windows:
+    name: Tests on windows-latest
+    needs: changes
+    if: needs.changes.outputs.code == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ github.event.inputs.ref }}
+          lfs: true
+
+      # -----------------------------------------------------------------
+      # Install FFmpeg so vitest suites that gate on `HAS_FFMPEG`
+      # (e.g. packages/engine videoFrameExtractor.test.ts) actually run on
+      # Windows. Without it those suites `describe.skipIf(!HAS_FFMPEG)`
+      # themselves silently and any Windows-specific regression in the
+      # FFmpeg-driven code paths would not be caught here.
+      # -----------------------------------------------------------------
+      - name: Install FFmpeg
+        uses: ./.github/actions/install-ffmpeg-windows
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+
+      - name: Install Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        shell: pwsh
+        run: bun install --frozen-lockfile
+
+      - name: Build
+        shell: pwsh
+        run: bun run build
+
+      - name: Run tests (all packages except producer)
+        shell: pwsh
+        run: bun run --filter "!@hyperframes/producer" test
+
+      - name: Run runtime contract test
+        shell: pwsh
+        run: bun run --filter "@hyperframes/core" test:hyperframe-runtime-ci

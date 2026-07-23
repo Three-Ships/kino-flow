@@ -1,0 +1,20 @@
+{
+  "$schema": "https://hyperframes.heygen.com/schema/registry-item.json",
+  "name": "ridged-burn",
+  "type": "hyperframes:block",
+  "title": "Ridged Burn",
+  "description": "Shader transition with ridged turbulence burn effect",
+  "tags": ["transition", "shader"],
+  "dimensions": {
+    "width": 1920,
+    "height": 1080
+  },
+  "duration": 4,
+  "files": [
+    {
+      "path": "ridged-burn.html",
+      "target": "compositions/ridged-burn.html",
+      "type": "hyperframes:composition"
+    }
+  ]
+}

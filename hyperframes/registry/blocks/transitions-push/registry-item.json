@@ -1,0 +1,20 @@
+{
+  "$schema": "https://hyperframes.heygen.com/schema/registry-item.json",
+  "name": "transitions-push",
+  "type": "hyperframes:block",
+  "title": "Push Transitions",
+  "description": "Showcase of push and slide transitions",
+  "tags": ["transition", "showcase"],
+  "dimensions": {
+    "width": 1920,
+    "height": 1080
+  },
+  "duration": 24,
+  "files": [
+    {
+      "path": "transitions-push.html",
+      "target": "compositions/transitions-push.html",
+      "type": "hyperframes:composition"
+    }
+  ]
+}

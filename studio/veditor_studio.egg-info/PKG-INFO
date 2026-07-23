@@ -1,0 +1,8 @@
+Metadata-Version: 2.4
+Name: veditor-studio
+Version: 0.1.0
+Summary: Web interface for the Claude Veditor video editing studio
+Requires-Python: >=3.10
+Requires-Dist: fastapi>=0.115
+Requires-Dist: uvicorn[standard]>=0.32
+Requires-Dist: python-multipart>=0.0.12

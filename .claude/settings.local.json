@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "PowerShell(*)",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "Bash(cp \"D:/Claude Veditor/video-use/helpers/best_take.py\" \"C:/Users/seanh/.claude/skills/video-use/helpers/best_take.py\")",
+      "Read(//c/Users/seanh/.claude/skills/video-use/helpers/**)",
+      "Bash(cp \"D:/Claude Veditor/video-use/helpers/level_audio.py\" \"C:/Users/seanh/.claude/skills/video-use/helpers/level_audio.py\")",
+      "Bash(cp \"D:/Claude Veditor/video-use/helpers/sync_audio.py\" \"C:/Users/seanh/.claude/skills/video-use/helpers/sync_audio.py\")",
+      "Bash(cp \"D:/Claude Veditor/video-use/helpers/match_pairs.py\" \"C:/Users/seanh/.claude/skills/video-use/helpers/match_pairs.py\")",
+      "WebSearch"
+    ]
+  }
+}

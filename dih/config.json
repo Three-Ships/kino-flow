@@ -1,0 +1,46 @@
+{
+  "client": "Dog is Human",
+  "brand": {
+    "primary": "#1B9AAA",
+    "accent": "#F4A950",
+    "logo": ""
+  },
+  "voice_id": "",
+  "voice_model": "eleven_multilingual_v2",
+  "voice_settings": { "stability": 0.5, "similarity": 0.75, "style": 0.15, "speaker_boost": true },
+  "gemini_model": "gemini-3.5-flash",
+  "video": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "target_seconds": 22,
+    "min_seconds": 12,
+    "max_seconds": 34
+  },
+  "captions": {
+    "enabled": true,
+    "font": "Arial",
+    "style": "boxed"
+  },
+  "music": {
+    "enabled": true,
+    "folder": "music",
+    "vo_duck_db": -22
+  },
+  "broll": {
+    "folder": "broll",
+    "clip_fallback": true,
+    "clip_min_score": 0.18
+  },
+  "paths": {
+    "knowledge": "knowledge",
+    "notes": "notes",
+    "output": "output"
+  },
+  "batch_size": 8,
+  "slack": {
+    "mode": "folder",
+    "channel": "",
+    "note": "mode=folder reads notes/*.md|txt. Set mode=connector once the Slack connector is authorized; ingestion code will read from the channel above."
+  }
+}

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aura Index — Done</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .thanks-wrap {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 80vh;
+      max-width: 520px;
+    }
+    .check {
+      font-size: 3rem;
+      margin-bottom: 1.8rem;
+      animation: fadeUp 0.6s ease;
+    }
+    h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.15;
+      margin-bottom: 1rem;
+      animation: fadeUp 0.6s ease 0.1s both;
+    }
+    .sub {
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.75;
+      animation: fadeUp 0.6s ease 0.2s both;
+      margin-bottom: 2.5rem;
+    }
+    .pending-box {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.2rem 1.4rem;
+      width: 100%;
+      animation: fadeUp 0.6s ease 0.3s both;
+    }
+    .pending-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.8rem;
+    }
+    .pending-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .pending-chip {
+      border-radius: 100px;
+      padding: 0.3rem 0.8rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+    .chip-done {
+      background: rgba(45,198,83,0.12);
+      border: 1px solid rgba(45,198,83,0.3);
+      color: #2DC653;
+    }
+    .chip-wait {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(12px); }
+      to   { opacity:1; transform:none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">Aura Index</div>
+    <div class="thanks-wrap">
+      <div class="check">✓</div>
+      <h1 id="headline">You're all done.</h1>
+      <p class="sub">
+        Your responses have been saved. Colors will be revealed<br>
+        together once everyone has finished — stay tuned.
+      </p>
+      <div class="pending-box">
+        <div class="pending-label">Waiting on</div>
+        <div class="pending-list" id="pendingList">
+          <span style="color:var(--muted);font-size:0.85rem">Loading&hellip;</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const name = decodeURIComponent(new URLSearchParams(window.location.search).get('name') || '');
+    if (name) {
+      document.getElementById('headline').textContent = `${name}, you're all done.`;
+    }
+
+    async function loadStatus() {
+      const resp = await fetch('/api/status');
+      const { submitted, pending, participants } = await resp.json();
+      const list = document.getElementById('pendingList');
+      list.innerHTML = '';
+
+      // Show all participants, done = green, pending = grey
+      const allResp = await fetch('/api/participants');
+      const { participants: all } = await allResp.json();
+
+      all.forEach(p => {
+        const chip = document.createElement('span');
+        chip.className = submitted.includes(p) ? 'pending-chip chip-done' : 'pending-chip chip-wait';
+        chip.textContent = submitted.includes(p) ? `✓ ${p}` : p;
+        list.appendChild(chip);
+      });
+
+      if (pending.length === 0) {
+        document.querySelector('.sub').innerHTML =
+          `All responses are in! Your facilitator will reveal everyone's colors shortly.`;
+      }
+    }
+
+    loadStatus();
+    setInterval(loadStatus, 8000);
+  </script>
+</body>
+</html>

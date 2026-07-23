@@ -1,0 +1,7 @@
+pyproject.toml
+server.py
+veditor_studio.egg-info/PKG-INFO
+veditor_studio.egg-info/SOURCES.txt
+veditor_studio.egg-info/dependency_links.txt
+veditor_studio.egg-info/requires.txt
+veditor_studio.egg-info/top_level.txt

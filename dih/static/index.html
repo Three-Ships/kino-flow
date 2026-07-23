@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dog is Human — Auto Editor</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="dot"></span>
+      <div>
+        <h1>Dog is Human — Auto Editor</h1>
+        <p class="sub">Briefs in. 8 videos out.</p>
+      </div>
+    </div>
+    <button id="settingsBtn" class="ghost">Settings</button>
+  </header>
+
+  <section id="settings" class="card hidden">
+    <h2>Settings</h2>
+    <div class="grid">
+      <label>Voice
+        <select id="voice"><option value="">Loading…</option></select>
+      </label>
+      <label>Gemini model
+        <input id="model" type="text" />
+      </label>
+      <label>Target length (s)
+        <input id="target" type="number" min="8" max="60" />
+      </label>
+      <label class="chk"><input id="captions" type="checkbox" /> Burn captions</label>
+      <label class="chk"><input id="music" type="checkbox" /> Music bed</label>
+    </div>
+    <button id="saveCfg">Save settings</button>
+    <span id="cfgMsg" class="muted"></span>
+  </section>
+
+  <div class="cols">
+    <main>
+      <section class="card">
+        <h2>New brief</h2>
+        <input id="noteTitle" type="text" placeholder="Title (e.g. itchy-skin-3am-hook)" />
+        <textarea id="noteText" rows="7" placeholder="Paste the DiH Slack note / brief here…"></textarea>
+        <button id="addNote">Add brief</button>
+      </section>
+
+      <section class="card">
+        <div class="row between">
+          <h2>Briefs <span id="noteCount" class="pill">0</span></h2>
+          <button id="runAll" class="primary">Run all →</button>
+        </div>
+        <ul id="notes" class="list"></ul>
+      </section>
+    </main>
+
+    <aside>
+      <section class="card">
+        <h2>Jobs</h2>
+        <ul id="jobs" class="list small"></ul>
+      </section>
+
+      <section class="card">
+        <h2>B-roll labels</h2>
+        <div id="labels" class="chips"></div>
+      </section>
+
+      <section class="card">
+        <h2>Knowledge</h2>
+        <ul id="knowledge" class="list small"></ul>
+      </section>
+    </aside>
+  </div>
+
+  <section class="card">
+    <h2>Finished videos</h2>
+    <div id="outputs" class="gallery"></div>
+  </section>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

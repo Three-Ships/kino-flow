@@ -1,0 +1,20 @@
+{
+  "$schema": "https://hyperframes.heygen.com/schema/registry-item.json",
+  "name": "logo-outro",
+  "type": "hyperframes:block",
+  "title": "Logo Outro",
+  "description": "Cinematic logo reveal with piece-by-piece assembly, glow bloom, tagline fade-in, and URL pill",
+  "tags": ["branding", "outro", "logo"],
+  "dimensions": {
+    "width": 1920,
+    "height": 1080
+  },
+  "duration": 6,
+  "files": [
+    {
+      "path": "logo-outro.html",
+      "target": "compositions/logo-outro.html",
+      "type": "hyperframes:composition"
+    }
+  ]
+}

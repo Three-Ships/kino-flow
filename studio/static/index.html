@@ -1,0 +1,1407 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kino Flow 1.0</title>
+  <!-- Favicons (added 2026-05-13 with the brand drop) -->
+  <link rel="icon"             type="image/png" sizes="32x32"  href="/favicon-32.png" />
+  <link rel="icon"             type="image/png" sizes="64x64"  href="/favicon-64.png" />
+  <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="stylesheet" href="/style.css?v=20260720c" />
+  <script src="https://unpkg.com/split.js@1.6.5/dist/split.min.js"></script>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════ SIDEBAR NAV ═════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <img class="sb-logo-img" src="/kinokore-logo.png" alt="Kino Flow 1.0" />
+      <div class="sb-titles">
+        <span class="sb-name">Kino Flow</span>
+        <span class="sb-sub">1.0</span>
+      </div>
+    </div>
+
+    <!-- Tabs moved to the horizontal top bar (see .topnav in the workspace).
+         The sidebar now leads with the team scope + the three action buttons. -->
+
+    <!-- ── TEAM / BRAND PICKER ──
+         Scopes asset discovery to one of three product lines. The asset
+         root has subfolders per team, each with the same internal layout
+         (HOOKS, B-Roll, CTAs, Music, SFX, Brand Guidelines). -->
+    <div class="team-zone">
+      <div class="team-label">TEAM</div>
+      <div class="team-pills" role="radiogroup" aria-label="Active team">
+        <button class="team-pill" type="button" data-team="endurance" role="radio" title="Endurance · Auto Warranty">
+          <span class="tp-name">Endurance</span>
+          <span class="tp-sub">Auto Warranty</span>
+        </button>
+        <button class="team-pill" type="button" data-team="windows" role="radio" title="Windows · RbA Windows">
+          <span class="tp-name">Windows</span>
+          <span class="tp-sub">RbA Windows</span>
+        </button>
+        <button class="team-pill" type="button" data-team="bath" role="radio" title="Bath · Walk-in Showers">
+          <span class="tp-name">Bath</span>
+          <span class="tp-sub">Walk-in Showers</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ── ROLL THE DICE ── -->
+    <div class="dice-zone">
+      <button id="roll-dice-btn" type="button" class="dice-btn" title="Autonomously compose a full video from your asset folders — no input needed">
+        <span class="dice-icon" aria-hidden="true">🎲</span>
+        <span class="dice-label">Roll the Dice</span>
+        <span class="dice-sub" id="dice-team-sub">auto-compose</span>
+      </button>
+      <button id="dice-cfg-btn" type="button" class="dice-cfg-btn" title="Configure asset folder paths">⚙</button>
+      <label class="dice-hg-toggle" id="dice-hg-label" title="Use your selected HeyGen avatar to speak the script instead of ElevenLabs VO">
+        <input type="checkbox" id="dice-heygen-toggle" />
+        <span>avatar (HeyGen)</span>
+      </label>
+    </div>
+
+    <!-- ── VO + B-ROLL VARIANTS ── -->
+    <div class="dice-zone">
+      <button id="variants-btn" type="button" class="dice-btn" title="Generate N script variants with hook+body+CTA, TTS them, composite each with random b-roll + burned captions. One click → N finished videos.">
+        <span class="dice-icon" aria-hidden="true">🎬</span>
+        <span class="dice-label">Variants</span>
+        <span class="dice-sub" id="variants-sub">VO + B-roll · 5×</span>
+      </button>
+    </div>
+
+    <!-- ── STREAMLINED ADS ── -->
+    <div class="dice-zone">
+      <button id="streamlined-btn" type="button" class="dice-btn" title="10–20s direct-response ad: background video/image + hook + bullet selling points + CTA + music. Or the text-VO version: a big on-screen hook read out loud, then a CTA. Deterministic — renders in seconds.">
+        <span class="dice-icon" aria-hidden="true">⚡</span>
+        <span class="dice-label">Streamlined Ad</span>
+        <span class="dice-sub">hook · bullets · CTA</span>
+      </button>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="sb-health-row">
+        <span class="sb-dot" id="sb-dot"></span>
+        <span class="sb-health-text" id="health">connecting…</span>
+      </div>
+      <div class="sb-usage" id="sb-usage-summary">
+        <span class="sbu-label">tab</span>
+        <span id="sb-u-cost">$0.0000</span>
+      </div>
+      <div class="sb-model-row">
+        <select id="sb-model-select" title="global model" class="sb-model-select">
+          <option value="sonnet">Sonnet 4.6</option>
+          <option value="opus">Opus 4.7</option>
+          <option value="haiku">Haiku 4.5</option>
+        </select>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══════════════════════════════════════ WORKSPACE ═════ -->
+  <div class="workspace" id="workspace">
+
+    <!-- top bar: horizontal browser-style tabs (left) + usage meters (right) -->
+    <header>
+      <nav class="topnav" role="tablist">
+        <span class="topnav-group">Workspace</span>
+        <button class="tab active" data-tab="chat"     type="button"><span class="si">💬</span>Chat</button>
+        <button class="tab"        data-tab="files"    type="button"><span class="si">📁</span>Files</button>
+
+        <span class="topnav-sep"></span>
+        <span class="topnav-group">Pipeline</span>
+        <button class="tab"        data-tab="captions" type="button"><span class="si">📝</span>Captions</button>
+        <button class="tab"        data-tab="graphics" type="button"><span class="si">✦</span>Graphics</button>
+        <button class="tab"        data-tab="broll"    type="button"><span class="si">🎬</span>B-Roll</button>
+        <button class="tab"        data-tab="music"    type="button"><span class="si">🎵</span>Music</button>
+        <button class="tab"        data-tab="avatar"   type="button"><span class="si">👤</span>Avatar</button>
+
+        <span class="topnav-sep"></span>
+        <span class="topnav-group">Gen AI</span>
+        <button class="tab"        data-tab="genai"    type="button"><span class="si">🪄</span>Gen AI</button>
+
+        <span class="topnav-sep"></span>
+        <span class="topnav-group">History</span>
+        <button class="tab"        data-tab="sessions" type="button"><span class="si">💾</span>Sessions</button>
+        <button class="tab"        data-tab="jobs"     type="button"><span class="si">⚡</span>Jobs</button>
+        <button class="tab"        data-tab="manager"  type="button"><span class="si">📋</span>Manager<span class="tab-badge" id="manager-badge" hidden>0</span></button>
+        <button class="tab"        data-tab="logs"     type="button"><span class="si">📡</span>Logs<span class="tab-badge" id="logs-badge" hidden>0</span></button>
+      </nav>
+      <div class="header-meta">
+        <div class="usage" id="usage-prompt" title="this turn — resets when you send">
+          <span class="u-label">prompt</span>
+          <span class="u-val" id="p-tok">0</span><span class="u-sep">tok</span>
+          <span class="u-cost" id="p-cost">$0.0000</span>
+        </div>
+        <div class="usage" id="usage" title="this tab — persists across reloads via localStorage">
+          <span class="u-label">tab</span>
+          <span class="u-val" id="u-in">0</span><span class="u-sep">in</span>
+          <span class="u-val" id="u-out">0</span><span class="u-sep">out</span>
+          <span class="u-val" id="u-cache">0</span><span class="u-sep">cache</span>
+          <span class="u-cost" id="u-cost">$0.0000</span>
+          <button class="u-reset" id="u-reset" type="button" title="reset tab counters">↺</button>
+        </div>
+        <div class="usage" id="usage-life" title="project lifetime — videos/edit/usage.log">
+          <span class="u-label">project</span>
+          <span class="u-val" id="l-turns">0</span><span class="u-sep">turns</span>
+          <span class="u-val" id="l-tokens">0</span><span class="u-sep">tok</span>
+          <span class="u-cost" id="l-cost">$0.0000</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- main split: content-panel (left) + right panel -->
+    <div class="workspace-panels" id="workspace-panels">
+
+      <!-- ────── CONTENT PANEL (tab panels live here) ────── -->
+      <section class="content-panel" id="content-panel">
+
+        <!-- ====== CHAT TAB ====== -->
+        <div class="tab-panel active" data-panel="chat">
+          <div class="chat-history-pane">
+            <div class="conversation" id="conversation">
+              <div class="empty">
+                Drop a video on the right, describe what you want — or hit
+                <kbd>presets</kbd> for a one-click caption + aspect-ratio prompt.
+                The agent reads your TRIMMING / RENDER / MOTION philosophy docs automatically.
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-input-pane">
+            <div class="status-bar" id="status-bar" hidden>
+              <span class="spinner" aria-hidden="true"></span>
+              <span class="status-text" id="status-text">thinking…</span>
+              <span class="status-elapsed" id="status-elapsed">0.0s</span>
+            </div>
+
+            <div class="composer">
+              <div class="composer-header">
+                <span class="st-title">pipeline</span>
+                <span class="st-status" id="composer-status">optional · pick a video to wrap your prompt as a pipeline</span>
+                <span class="composer-modes">
+                  <label class="mode-toggle" title="split the picked video into per-hook MP4s">
+                    <input type="checkbox" id="mode-split-hooks" />
+                    ✂ split hooks
+                  </label>
+                  <label class="mode-toggle" title="Ctrl-click to pick 2+ videos. For each sentence in the script, the best take across all videos wins. Output is the stitched MP4.">
+                    <input type="checkbox" id="mode-stitch-script" />
+                    ✂ stitch script
+                  </label>
+                </span>
+                <button type="button" id="composer-stitch-run" class="composer-clear-x" hidden title="run the stitch pipeline directly">▶ run stitch</button>
+                <button type="button" id="composer-clear-btn" class="composer-clear-x" title="clear pipeline selections">clear</button>
+              </div>
+              <div class="composer-row">
+                <label class="composer-field">
+                  <span>video</span>
+                  <select id="composer-video-select"><option value="">— none —</option></select>
+                </label>
+                <label class="composer-field" title="External audio source (DJI mic, lav, etc.). Leave blank to use the video's built-in audio.">
+                  <span>audio <span class="composer-field-hint">ext. mic</span></span>
+                  <select id="composer-audio-select"><option value="">— use video audio —</option></select>
+                </label>
+                <label class="composer-field">
+                  <span>script</span>
+                  <select id="composer-script-select"><option value="">— none —</option></select>
+                </label>
+                <label class="composer-field">
+                  <span>music <button type="button" id="gen-music-btn" class="gen-mini">+ gen</button></span>
+                  <select id="composer-music-select"><option value="">— none —</option></select>
+                </label>
+                <label class="composer-field">
+                  <span>VO <button type="button" id="gen-vo-btn" class="gen-mini">+ gen</button></span>
+                  <select id="composer-vo-select"><option value="">— none —</option></select>
+                </label>
+                <label class="composer-field">
+                  <span>model</span>
+                  <select id="composer-model-select">
+                    <option value="sonnet">Sonnet 4.6 — fast</option>
+                    <option value="opus">Opus 4.7 — best</option>
+                    <option value="haiku">Haiku 4.5 — cheapest</option>
+                  </select>
+                </label>
+                <label class="composer-field">
+                  <span>quality</span>
+                  <select id="composer-quality-select" title="High = 1080p with proxy-first downscale · Medium = cost-optimized 1080p">
+                    <option value="high">High · 1080p</option>
+                    <option value="medium">Medium · 1080p</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+
+            <form class="prompt-bar" id="prompt-form">
+              <textarea id="prompt"
+                placeholder="describe what you want — or pick a video above and this becomes a full pipeline"
+                rows="3" required></textarea>
+              <div class="prompt-controls">
+                <label class="continue-toggle">
+                  <input type="checkbox" id="continue-session" checked />
+                  continue last session
+                </label>
+                <label class="model-pick" title="model for next send (no pipeline video selected)">
+                  model
+                  <select id="model-select">
+                    <option value="opus">Opus 4.7 — best reasoning</option>
+                    <option value="sonnet">Sonnet 4.6 — fast + cheap</option>
+                    <option value="haiku">Haiku 4.5 — fastest</option>
+                  </select>
+                </label>
+                <button type="submit" id="send-btn">send (⌘↵)</button>
+                <button type="button" id="stop-btn" hidden>stop</button>
+                <button type="button" id="ding-toggle" title="Play a chime when a render finishes">🔔</button>
+              </div>
+            </form>
+            <textarea id="composer-freeform" hidden></textarea>
+            <button type="button" id="composer-build-btn" hidden></button>
+          </div>
+        </div>
+
+        <!-- ====== FILES TAB ====== -->
+        <div class="tab-panel" data-panel="files">
+          <div class="files-subtabs" role="tablist">
+            <button type="button" class="files-subtab active" data-files-view="outputs" role="tab" aria-selected="true">
+              <span class="fst-icon">📤</span>
+              <span class="fst-label">Outputs</span>
+              <span class="fst-count" id="fst-count-outputs">0</span>
+            </button>
+            <button type="button" class="files-subtab" data-files-view="resources" role="tab" aria-selected="false">
+              <span class="fst-icon">📥</span>
+              <span class="fst-label">Resources</span>
+              <span class="fst-count" id="fst-count-resources">0</span>
+            </button>
+            <button type="button" id="files-refresh-btn" class="ghost-mini" title="refresh">↻</button>
+          </div>
+          <div class="files-blurb" id="files-blurb">
+            Click any file to preview · drag to dropzones on the right · double-click a video to load into the player.
+          </div>
+
+          <!-- Outputs view: per-run folders with deliverables inside -->
+          <div class="files-view files-outputs" id="files-outputs">
+            <div class="files-empty">loading…</div>
+          </div>
+
+          <!-- Resources view: raw uploads (videos/audio/scripts) under videos/ -->
+          <div class="files-view files-resources" id="files-resources" hidden>
+            <div class="files-empty">loading…</div>
+          </div>
+
+          <!-- Text-file preview overlay (.txt / .srt / .json / .md) -->
+          <div class="text-preview-overlay" id="text-preview-overlay" hidden>
+            <div class="text-preview-card">
+              <div class="text-preview-header">
+                <span class="text-preview-title" id="text-preview-title">file</span>
+                <button type="button" class="text-preview-close" id="text-preview-close" title="close">×</button>
+              </div>
+              <pre class="text-preview-body" id="text-preview-body"></pre>
+            </div>
+          </div>
+
+          <!-- Hidden legacy fs-roots / fs-list — JS still references them for back-compat -->
+          <div class="fs-panel" hidden>
+            <div class="fs-roots" id="fs-roots"></div>
+            <ul class="fs-list" id="fs-list"></ul>
+          </div>
+        </div>
+
+        <!-- ====== CAPTIONS TAB ====== -->
+        <div class="tab-panel" data-panel="captions">
+          <div class="presets-scroll">
+            <p class="tab-blurb">Caption style and timing. Settings persist and auto-apply to your next <strong>send</strong>.</p>
+
+            <section class="preset-section">
+              <h3>captions on / off</h3>
+              <p class="hint">When off, the pipeline skips the caption burn step entirely.</p>
+              <label class="hook-label inline">
+                <input type="checkbox" id="captions-enable" checked /> burn captions on this run
+              </label>
+            </section>
+
+            <section class="preset-section">
+              <h3>caption style</h3>
+              <p class="hint">9 named presets from <code>caption_colors_1.pdf</code>. Pick one, then add a hook line below.</p>
+              <div class="caption-grid" id="caption-grid"></div>
+              <label class="hook-label">hook text (overrides caption text on burn)
+                <input type="text" id="caption-hook" placeholder="This stops the scroll" />
+              </label>
+              <label class="hook-label inline"><input type="checkbox" id="caption-rounded" checked /> rounded corners</label>
+              <label class="hook-label inline"><input type="checkbox" id="caption-shadow" /> drop shadow</label>
+            </section>
+
+            <section class="preset-section">
+              <h3>caption format</h3>
+              <div class="format-row">
+                <label class="format-label">layout</label>
+                <div class="chip-row" id="layout-row"></div>
+              </div>
+              <div class="format-row">
+                <label class="format-label" for="max-chars">max chars / line</label>
+                <input type="range" id="max-chars-slider" min="10" max="100" step="1" />
+                <input type="number" id="max-chars" min="10" max="100" step="1" class="num-input" />
+              </div>
+              <div class="format-row">
+                <label class="format-label" for="min-duration">min duration (s)</label>
+                <input type="range" id="min-duration-slider" min="0.3" max="5.0" step="0.1" />
+                <input type="number" id="min-duration" min="0.3" max="5.0" step="0.1" class="num-input" />
+              </div>
+              <div class="format-row">
+                <label class="format-label" for="gap-frames">gap (frames)</label>
+                <input type="range" id="gap-frames-slider" min="0" max="12" step="1" />
+                <input type="number" id="gap-frames" min="0" max="12" step="1" class="num-input" />
+              </div>
+              <div class="format-row">
+                <label class="format-label">case</label>
+                <div class="chip-row" id="case-row"></div>
+              </div>
+            </section>
+
+            <section class="preset-section">
+              <h3>font</h3>
+              <div class="format-row">
+                <label class="format-label">family</label>
+                <div class="chip-row font-family-row" id="font-family-row"></div>
+              </div>
+              <div class="format-row">
+                <label class="format-label" for="font-size">size (pt)</label>
+                <input type="range"  id="font-size-slider" min="40" max="160" step="2" />
+                <input type="number" id="font-size"        min="40" max="160" step="2" class="num-input" />
+              </div>
+            </section>
+
+            <section class="preset-section">
+              <h3>placement</h3>
+              <div class="chip-row" id="placement-row"></div>
+            </section>
+            <section class="preset-section">
+              <h3>aspect ratio</h3>
+              <div class="chip-row" id="aspect-row"></div>
+            </section>
+            <section class="preset-section">
+              <h3>on-screen hook</h3>
+              <p class="hint">Static overlay in the safe zone (center or upper-third) meant to stop the scroll in the first 3s. Burns after captions; same source video produces N variants when batch is on.</p>
+              <label class="hook-label inline">
+                <input type="checkbox" id="hook-enable" /> enable on-screen hook
+              </label>
+
+              <div class="hook-sub" id="hook-sub" hidden>
+                <label class="hook-label">hook text
+                  <textarea id="hook-text" rows="2" placeholder="This stops the scroll"></textarea>
+                </label>
+
+                <div class="hook-mode-row">
+                  <label class="hook-label inline" title="Kino reads the script/transcript and writes 3 hook candidates; batch is auto-on in this mode and all 3 export.">
+                    <input type="checkbox" id="hook-ai" /> 🎲 let Kino write the hook
+                  </label>
+                  <label class="hook-label inline" title="Output 3 variants of the same video with different hook copy. Same style + position; only the text changes.">
+                    <input type="checkbox" id="hook-batch" /> batch (3 variants)
+                  </label>
+                </div>
+
+                <div class="hook-batch-fields" id="hook-batch-fields" hidden>
+                  <label class="hook-label">hook variant 2
+                    <input type="text" id="hook-text-2" placeholder="alt copy A" />
+                  </label>
+                  <label class="hook-label">hook variant 3
+                    <input type="text" id="hook-text-3" placeholder="alt copy B" />
+                  </label>
+                </div>
+
+                <div class="format-row">
+                  <label class="format-label">placement</label>
+                  <div class="chip-row" id="hook-position-row">
+                    <button type="button" class="chip selected" data-hook-pos="upper-third">Upper-third</button>
+                    <button type="button" class="chip" data-hook-pos="center">Center</button>
+                  </div>
+                </div>
+
+                <div class="format-row">
+                  <label class="format-label">duration</label>
+                  <div class="chip-row" id="hook-duration-mode-row">
+                    <button type="button" class="chip selected" data-hook-dur-mode="timed">First N seconds</button>
+                    <button type="button" class="chip" data-hook-dur-mode="full">Whole video</button>
+                  </div>
+                </div>
+                <div class="format-row" id="hook-duration-slider-row">
+                  <label class="format-label" for="hook-duration">seconds</label>
+                  <input type="range"  id="hook-duration-slider" min="1" max="10" step="0.5" value="3" />
+                  <input type="number" id="hook-duration"        min="1" max="10" step="0.5" value="3" class="num-input" />
+                </div>
+
+                <div class="format-row">
+                  <label class="format-label">font</label>
+                  <div class="chip-row font-family-row" id="hook-font-family-row"></div>
+                </div>
+                <div class="format-row">
+                  <label class="format-label" for="hook-font-size">size (pt)</label>
+                  <input type="range"  id="hook-font-size-slider" min="40" max="200" step="2" value="96" />
+                  <input type="number" id="hook-font-size"        min="40" max="200" step="2" value="96" class="num-input" />
+                </div>
+                <div class="format-row">
+                  <label class="format-label">text color</label>
+                  <input type="color" id="hook-color" value="#FFFFFF" />
+                </div>
+                <div class="format-row">
+                  <label class="format-label">background</label>
+                  <input type="color" id="hook-bg-color" value="#000000" />
+                  <input type="range" id="hook-bg-alpha" min="0" max="255" step="5" value="160" title="opacity 0-255" />
+                  <span class="hint" id="hook-bg-alpha-out">160</span>
+                </div>
+                <label class="hook-label inline"><input type="checkbox" id="hook-rounded" checked /> rounded background</label>
+                <label class="hook-label inline"><input type="checkbox" id="hook-shadow" /> drop shadow</label>
+
+                <div class="preset-actions" style="margin-top:10px">
+                  <button type="button" id="hook-run-btn" class="primary">▶ burn hook</button>
+                  <span class="hint" id="hook-status">pick a video in the right panel, set the hook above, hit ▶ burn hook</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="preset-section">
+              <h3>extra instructions <span class="opt">optional</span></h3>
+              <textarea id="preset-extra" rows="2" placeholder="e.g. cut silences > 0.4s, rotate 90° CCW"></textarea>
+            </section>
+            <div class="preset-actions">
+              <button type="button" id="preset-preview-btn" class="ghost">preview prompt</button>
+            </div>
+            <pre class="preset-preview" id="preset-preview" hidden></pre>
+          </div>
+        </div>
+
+        <!-- ====== GRAPHICS TAB ====== -->
+        <div class="tab-panel" data-panel="graphics">
+          <div class="presets-scroll">
+            <p class="tab-blurb">Auto-generated motion graphics keyed to what's being said. Auto-apply on send from Chat.</p>
+
+            <section class="preset-section">
+              <h3>graphics mode</h3>
+              <label class="hook-label inline">
+                <input type="checkbox" id="graphics-enable" /> enable graphics
+              </label>
+            </section>
+            <section class="preset-section">
+              <h3>style preset</h3>
+              <div class="caption-grid" id="graphics-grid"></div>
+            </section>
+            <section class="preset-section">
+              <h3>density</h3>
+              <div class="chip-row" id="graphics-density-row"></div>
+            </section>
+            <section class="preset-section">
+              <h3>kinds to include</h3>
+              <div class="chip-row chip-multi" id="graphics-kinds-row"></div>
+            </section>
+            <section class="preset-section">
+              <h3>extra direction <span class="opt">optional</span></h3>
+              <textarea id="graphics-extra" rows="2" placeholder="e.g. emphasize stats, keep callouts right side"></textarea>
+            </section>
+            <div class="preset-actions">
+              <button type="button" id="graphics-preview-btn" class="ghost">preview graphics block</button>
+            </div>
+            <pre class="preset-preview" id="graphics-preview" hidden></pre>
+          </div>
+        </div>
+
+        <!-- ====== B-ROLL TAB ====== -->
+        <div class="tab-panel" data-panel="broll">
+          <div class="presets-scroll">
+            <p class="tab-blurb">B-roll cutaway behavior. Auto-apply on send from Chat.</p>
+            <section class="preset-section">
+              <h3>mode</h3>
+              <div class="chip-row" id="broll-mode-row"></div>
+            </section>
+            <section class="preset-section">
+              <h3>root folder</h3>
+              <input id="broll-folder-input" type="text" class="broll-folder-input" placeholder="D:/path/to/broll_root" />
+            </section>
+            <section class="preset-section">
+              <h3>category opt-ins</h3>
+              <div class="chip-row chip-multi" id="broll-categories-row"></div>
+            </section>
+            <section class="preset-section">
+              <h3>density</h3>
+              <div class="chip-row" id="broll-density-row"></div>
+            </section>
+            <section class="preset-section">
+              <h3>extra direction <span class="opt">optional</span></h3>
+              <textarea id="broll-extra" rows="2" placeholder="e.g. prefer 2026 footage, no Install for first 5s"></textarea>
+            </section>
+            <div class="preset-actions">
+              <button type="button" id="broll-preview-btn" class="ghost">preview b-roll block</button>
+            </div>
+            <pre class="preset-preview" id="broll-preview" hidden></pre>
+          </div>
+        </div>
+
+        <!-- ====== MUSIC / SFX TAB ====== -->
+        <div class="tab-panel" data-panel="music">
+          <div class="presets-scroll">
+            <p class="tab-blurb">Music bed and sound effects. Defaults to your Roll the Dice asset root — override per-folder below.</p>
+
+            <!-- ── MUSIC ── -->
+            <section class="preset-section">
+              <h3>music</h3>
+              <label class="hook-label inline">
+                <input type="checkbox" id="music-enable" checked /> include music bed
+              </label>
+            </section>
+
+            <section class="preset-section music-sub" id="music-sub">
+              <h3>music folder</h3>
+              <div class="folder-pick-row">
+                <input type="text" id="music-folder-input" class="broll-folder-input" placeholder="auto from asset root" spellcheck="false" />
+                <button type="button" class="fpick-btn" data-target="music-folder-input">Browse</button>
+                <button type="button" class="fpick-sync" id="music-folder-sync" title="Fill from Roll the Dice asset root">↺ root</button>
+              </div>
+            </section>
+
+            <section class="preset-section music-sub">
+              <h3>mode</h3>
+              <div class="chip-row" id="music-mode-row"></div>
+            </section>
+
+            <section class="preset-section music-sub">
+              <h3>level</h3>
+              <p class="hint">Dialogue must be clearly audible. Hard limit: never exceed -20 dBFS for music under active VO.</p>
+              <div class="chip-row" id="music-level-row"></div>
+            </section>
+
+            <!-- ── SFX ── -->
+            <section class="preset-section" style="margin-top:18px">
+              <h3>sound effects</h3>
+              <label class="hook-label inline">
+                <input type="checkbox" id="sfx-enable" checked /> include SFX
+              </label>
+            </section>
+
+            <section class="preset-section sfx-sub" id="sfx-sub">
+              <h3>sfx folder</h3>
+              <div class="folder-pick-row">
+                <input type="text" id="sfx-folder-input" class="broll-folder-input" placeholder="auto from asset root" spellcheck="false" />
+                <button type="button" class="fpick-btn" data-target="sfx-folder-input">Browse</button>
+                <button type="button" class="fpick-sync" id="sfx-folder-sync" title="Fill from Roll the Dice asset root">↺ root</button>
+              </div>
+            </section>
+
+            <section class="preset-section sfx-sub">
+              <h3>sfx placement</h3>
+              <div class="chip-row chip-multi" id="sfx-placement-row"></div>
+            </section>
+
+            <!-- ── shared extra ── -->
+            <section class="preset-section" style="margin-top:18px">
+              <h3>extra direction <span class="opt">optional</span></h3>
+              <textarea id="music-extra" rows="2" placeholder="e.g. fade music out in last 5s, duck music under narration only"></textarea>
+            </section>
+            <div class="preset-actions">
+              <button type="button" id="music-preview-btn" class="ghost">preview music block</button>
+            </div>
+            <pre class="preset-preview" id="music-preview" hidden></pre>
+          </div>
+        </div>
+
+        <!-- ====== AVATAR / HEYGEN TAB ====== -->
+        <div class="tab-panel" data-panel="avatar">
+          <div class="presets-scroll">
+            <p class="tab-blurb">
+              HeyGen avatar talking-head generation. Two modes: <strong>full segment</strong> (whole-frame avatar — replaces a hook or CTA) and
+              <strong>PIP overlay</strong> (transparent-bg avatar floats over your existing footage).
+              Plan: Creator. API key lives in <code>video-use/.env</code>.
+            </p>
+
+            <!-- API status -->
+            <section class="preset-section">
+              <div id="hg-status" class="hg-status">checking HeyGen connection…</div>
+            </section>
+
+            <!-- Avatar grid -->
+            <section class="preset-section">
+              <h3>avatar
+                <button type="button" id="hg-refresh-avatars" class="ghost-mini" title="Refetch from HeyGen">↻ refresh</button>
+              </h3>
+              <p class="hint">Default highlighted in cyan. Click a card to set it as the active avatar.</p>
+              <div class="hg-search-row">
+                <input type="text" id="hg-avatar-search" placeholder="filter avatars by name or tag…" spellcheck="false" />
+                <label class="inline-toggle">
+                  <input type="checkbox" id="hg-public-toggle" checked /> include public
+                </label>
+              </div>
+              <div class="hg-avatar-grid" id="hg-avatar-grid">
+                <div class="hint" style="padding:12px">loading…</div>
+              </div>
+            </section>
+
+            <!-- Voice -->
+            <section class="preset-section">
+              <h3>voice
+                <button type="button" id="hg-refresh-voices" class="ghost-mini" title="Refetch from HeyGen">↻ refresh</button>
+              </h3>
+              <div class="hg-voice-row">
+                <input type="text" id="hg-voice-search" placeholder="filter voices…" spellcheck="false" />
+                <select id="hg-voice-select"><option value="">— pick a voice —</option></select>
+                <button type="button" id="hg-voice-preview" class="ghost-mini" title="Open the voice's HeyGen preview">▶ preview</button>
+              </div>
+            </section>
+
+            <!-- Mode -->
+            <section class="preset-section">
+              <h3>mode</h3>
+              <div class="chip-row">
+                <button type="button" class="chip selected" data-hg-mode="segment">
+                  <span>Full segment</span>
+                  <span class="chip-meta">whole frame · replaces hook/CTA</span>
+                </button>
+                <button type="button" class="chip" data-hg-mode="pip">
+                  <span>PIP overlay</span>
+                  <span class="chip-meta">transparent bg · composites over video</span>
+                </button>
+              </div>
+            </section>
+
+            <!-- Settings -->
+            <section class="preset-section">
+              <h3>settings</h3>
+              <div class="hg-settings-grid">
+                <label>
+                  <span>quality (cost tier)</span>
+                  <select id="hg-quality">
+                    <option value="720">720p — ~half credits</option>
+                    <option value="1080" selected>1080p — full credits</option>
+                  </select>
+                </label>
+                <label>
+                  <span>aspect</span>
+                  <select id="hg-aspect">
+                    <option value="landscape" selected>16:9 landscape</option>
+                    <option value="vertical">9:16 vertical</option>
+                    <option value="square">1:1 square</option>
+                  </select>
+                </label>
+                <label>
+                  <span>avatar style</span>
+                  <select id="hg-avatar-style">
+                    <option value="normal">normal</option>
+                    <option value="circle">circle</option>
+                    <option value="closeUp">closeUp</option>
+                  </select>
+                </label>
+                <label class="hg-bg-row" id="hg-bg-row">
+                  <span>background color</span>
+                  <input type="color" id="hg-bg-color" value="#0e1a26" />
+                </label>
+                <label>
+                  <span>voice speed</span>
+                  <input type="number" id="hg-voice-speed" value="1.0" step="0.1" min="0.5" max="1.5" />
+                </label>
+              </div>
+            </section>
+
+            <!-- PIP-only settings -->
+            <section class="preset-section hg-pip-only" hidden>
+              <h3>PIP overlay placement</h3>
+              <p class="hint">Where the transparent avatar lands on top of your composer-picked video.</p>
+              <div class="chip-row" id="hg-pip-position">
+                <button type="button" class="chip" data-hg-pos="bl">Bottom-left</button>
+                <button type="button" class="chip selected" data-hg-pos="br">Bottom-right</button>
+                <button type="button" class="chip" data-hg-pos="tl">Top-left</button>
+                <button type="button" class="chip" data-hg-pos="tr">Top-right</button>
+              </div>
+              <label class="hg-scale-row">
+                <span>avatar scale (% of video height)</span>
+                <input type="range" id="hg-pip-scale" min="15" max="60" value="32" />
+                <output id="hg-pip-scale-out">32%</output>
+              </label>
+            </section>
+
+            <!-- Script -->
+            <section class="preset-section">
+              <h3>script</h3>
+              <textarea id="hg-script" rows="6" placeholder="What should the avatar say? Plain text — no SSML." spellcheck="true"></textarea>
+              <div class="hint" id="hg-script-meta">0 chars · ~0.0s estimated</div>
+            </section>
+
+            <!-- Generate -->
+            <div class="preset-actions">
+              <button type="button" id="hg-generate-btn" class="primary">Generate avatar video</button>
+              <button type="button" id="hg-preview-prompt-btn" class="ghost">preview prompt</button>
+            </div>
+            <pre class="preset-preview" id="hg-prompt-preview" hidden></pre>
+          </div>
+        </div>
+
+        <!-- ====== SESSIONS TAB ====== -->
+        <div class="tab-panel" data-panel="sessions">
+          <div class="sessions-toolbar">
+            <button type="button" id="session-new-btn">+ new session</button>
+            <button type="button" id="session-save-btn" class="ghost">save current</button>
+            <span class="hint" id="session-active-info">no active session yet</span>
+          </div>
+          <ul class="session-list" id="session-list"></ul>
+          <p class="hint footer-hint">Sessions saved as snapshots in <code>localStorage</code> + <code>videos/edit/sessions.json</code>.</p>
+        </div>
+
+        <!-- ====== JOBS TAB ====== -->
+        <div class="tab-panel" data-panel="jobs">
+          <div class="jobs-toolbar">
+            <span class="hint">Each user prompt is a job. Operations are auto-detected from tool calls.</span>
+            <button type="button" id="jobs-refresh-btn" class="ghost">refresh</button>
+          </div>
+          <section class="jobs-summary" id="jobs-summary">
+            <h3>efficiency by operation</h3>
+            <table class="ops-table" id="ops-table">
+              <thead>
+                <tr>
+                  <th>operation</th><th>jobs</th><th>avg cost</th>
+                  <th>avg wall time</th><th>avg turns</th><th>total spent</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </section>
+          <section class="jobs-list-wrap">
+            <h3>recent jobs</h3>
+            <ul class="jobs-list" id="jobs-list"></ul>
+          </section>
+        </div>
+
+        <!-- ====== MANAGER TAB ====== -->
+        <div class="tab-panel" data-panel="manager">
+          <div class="jobs-toolbar">
+            <span class="hint">Deterministic quality + cost review over sync_log, level_log, jobs and usage logs.</span>
+            <button type="button" id="manager-refresh-btn" class="ghost">↻ run review</button>
+            <button type="button" id="manager-deep-btn" class="ghost" title="Send the review data to Kino for recommendations">🧠 deep review with Kino</button>
+          </div>
+          <div class="manager-scroll">
+            <div class="manager-meta hint" id="manager-meta">no review run yet</div>
+            <section class="jobs-summary">
+              <h3>at a glance</h3>
+              <div class="manager-cards" id="manager-cards"></div>
+            </section>
+            <section class="jobs-summary">
+              <h3>findings</h3>
+              <ul class="manager-findings" id="manager-findings"></ul>
+            </section>
+            <section class="jobs-summary">
+              <h3>cost by operation</h3>
+              <table class="ops-table" id="manager-ops-table">
+                <thead>
+                  <tr><th>operation</th><th>jobs</th><th>avg cost</th><th>avg wall</th><th>total</th></tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </section>
+          </div>
+        </div>
+
+        <!-- ====== LOGS TAB ====== -->
+        <div class="tab-panel" data-panel="logs">
+          <div class="logs-toolbar">
+            <span class="hint">Every stream-json event from the active turn.</span>
+            <label class="logs-filter-label"><input type="checkbox" id="logs-only-tools" /> tools only</label>
+            <label class="logs-filter-label"><input type="checkbox" id="logs-autoscroll" checked /> autoscroll</label>
+            <button type="button" id="logs-clear-btn" class="ghost">clear</button>
+            <button type="button" id="logs-copy-btn" class="ghost">copy all</button>
+          </div>
+          <div class="logs-list" id="logs-list"></div>
+        </div>
+
+        <!-- ====== GEN AI TAB ====== -->
+        <div class="tab-panel" data-panel="genai">
+          <div class="jobs-toolbar">
+            <span class="hint">Generative video (Veo) &amp; images (Nano Banana) via the Gemini API. Prompts should follow the required-reading docs.</span>
+            <button type="button" id="genai-models-btn" class="ghost" title="list the model ids the API currently exposes">list models</button>
+          </div>
+          <div class="genai-scroll">
+            <div class="chip-row" id="genai-mode-row">
+              <button type="button" class="chip selected" data-genai-mode="veo">
+                <span>🎬 Veo — video</span>
+                <span class="chip-meta">text/image → 8s clip · bills per second</span>
+              </button>
+              <button type="button" class="chip" data-genai-mode="nano">
+                <span>🍌 Nano Banana — image</span>
+                <span class="chip-meta">generate · edit · compose · cents each</span>
+              </button>
+            </div>
+
+            <!-- ── VEO ── -->
+            <section class="genai-form" id="genai-veo">
+              <label class="dice-field">
+                <span>prompt <span class="opt">7-part anatomy: shot · action · setting · subject · camera · style · audio</span></span>
+                <textarea id="veo-prompt" rows="4" placeholder="Medium tracking shot, a technician installs a bright white replacement window in a brick home, warm afternoon light, shallow depth of field, cinematic, subtle ambient street sound"></textarea>
+              </label>
+              <label class="dice-field">
+                <span>negative <span class="opt">what to avoid</span></span>
+                <input type="text" id="veo-negative" placeholder="text overlays, watermark, distorted hands" />
+              </label>
+              <div class="dice-row">
+                <label class="dice-field"><span>aspect</span>
+                  <select id="veo-aspect"><option value="9:16">9:16 vertical</option><option value="16:9">16:9 horizontal</option></select>
+                </label>
+                <label class="dice-field"><span>resolution</span>
+                  <select id="veo-resolution"><option value="1080p">1080p</option><option value="720p">720p</option></select>
+                </label>
+                <label class="dice-field"><span>duration (s)</span>
+                  <input type="number" id="veo-duration" min="4" max="8" step="1" placeholder="model default" />
+                </label>
+              </div>
+              <div class="dice-row">
+                <label class="dice-field">
+                  <span>first-frame image <span class="opt">optional — image-to-video</span></span>
+                  <input type="text" id="veo-image" placeholder="path to a still (e.g. a Nano Banana render)" spellcheck="false" />
+                </label>
+                <button type="button" class="fpick-btn" data-target="veo-image" data-fpick-files="1">Browse</button>
+              </div>
+              <div class="dice-row">
+                <label class="dice-field">
+                  <span>reference images <span class="opt">up to 3 · subject consistency · comma-separated</span></span>
+                  <input type="text" id="veo-refs" placeholder="path1.png, path2.png" spellcheck="false" />
+                </label>
+              </div>
+              <div class="dice-row">
+                <label class="dice-field"><span>model</span>
+                  <select id="veo-model">
+                    <option value="veo-3.1-fast-generate-preview">veo-3.1-fast (≈$1.20/8s)</option>
+                    <option value="veo-3.1-generate-preview">veo-3.1 (best)</option>
+                    <option value="veo-3.1-lite-generate-preview">veo-3.1-lite (cheapest)</option>
+                  </select>
+                </label>
+                <label class="dice-field"><span>count</span>
+                  <input type="number" id="veo-count" min="1" max="8" step="1" value="1" title="1 clip is ungated; >1 shows a cost estimate you must confirm" />
+                </label>
+              </div>
+              <div class="genai-cost" id="veo-cost" hidden></div>
+              <button type="button" id="veo-generate" class="save-btn">🎬 Generate video</button>
+            </section>
+
+            <!-- ── NANO BANANA ── -->
+            <section class="genai-form" id="genai-nano" hidden>
+              <label class="dice-field">
+                <span>prompt <span class="opt">generation formula / editing / composition per the NB doc</span></span>
+                <textarea id="nano-prompt" rows="4" placeholder="A photorealistic product hero shot of a walk-in shower, soft studio lighting, water droplets on glass, 45° angle, marble surround, shot on 85mm"></textarea>
+              </label>
+              <div class="dice-row">
+                <label class="dice-field">
+                  <span>input images <span class="opt">optional — edit/compose, up to 14 · comma-separated</span></span>
+                  <input type="text" id="nano-images" placeholder="ref1.png, ref2.png" spellcheck="false" />
+                </label>
+                <button type="button" class="fpick-btn" data-target="nano-images" data-fpick-files="1" data-fpick-multiple="1">Browse</button>
+              </div>
+              <div class="dice-row">
+                <label class="dice-field"><span>aspect <span class="opt">optional</span></span>
+                  <select id="nano-aspect"><option value="">— default —</option><option value="9:16">9:16</option><option value="1:1">1:1</option><option value="16:9">16:9</option></select>
+                </label>
+                <label class="dice-field"><span>size</span>
+                  <select id="nano-size"><option value="">— default —</option><option value="1K">1K</option><option value="2K">2K</option><option value="4K">4K</option></select>
+                </label>
+                <label class="dice-field"><span>model</span>
+                  <select id="nano-model">
+                    <option value="gemini-3.1-flash-image">flash (cheap)</option>
+                    <option value="gemini-3-pro-image">pro (best)</option>
+                  </select>
+                </label>
+                <label class="dice-field"><span>count</span>
+                  <input type="number" id="nano-count" min="1" max="10" step="1" value="1" />
+                </label>
+              </div>
+              <button type="button" id="nano-generate" class="save-btn">🍌 Generate image</button>
+            </section>
+
+            <div class="genai-status hint" id="genai-status" hidden></div>
+            <div class="kf-prog" id="genai-progress" hidden>
+              <div class="kf-prog-track"><div class="kf-prog-fill" id="genai-prog-fill"></div></div>
+              <span class="kf-prog-label" id="genai-prog-label"></span>
+            </div>
+            <section class="genai-results" id="genai-results" hidden>
+              <h3>results <span class="hint" id="genai-run-label"></span></h3>
+              <div class="genai-grid" id="genai-grid"></div>
+            </section>
+          </div>
+        </div>
+
+      </section><!-- /content-panel -->
+
+      <!-- ────── RIGHT PANEL — program monitor above, media/import below ────── -->
+      <aside class="right">
+        <div class="right-top-pane">
+          <div class="monitor">
+            <div class="monitor-chrome">
+              <span class="monitor-label">PROGRAM</span>
+              <span class="monitor-file" id="player-meta">no video loaded</span>
+            </div>
+            <div class="player-wrap">
+              <video id="player" controls preload="metadata"></video>
+              <!-- text-tool click target; visible only while the T tool is
+                   active so it never blocks normal player controls -->
+              <div id="kt-monitor-overlay" hidden title="click to place a title here"></div>
+            </div>
+          </div>
+        </div><!-- /right-top-pane -->
+
+        <div class="right-bottom-pane">
+          <div class="dual-dz">
+            <div class="dropzone" id="dz-video">
+              <input type="file" id="file-input-video" accept="video/*" hidden />
+              <div class="dz-label">drop video · click</div>
+              <div class="dz-progress" id="upload-progress-video" hidden></div>
+            </div>
+            <div class="dropzone" id="dz-audio">
+              <input type="file" id="file-input-audio" accept="audio/*" hidden />
+              <div class="dz-label">drop audio · click</div>
+              <div class="dz-progress" id="upload-progress-audio" hidden></div>
+            </div>
+            <div class="dropzone" id="dz-script">
+              <input type="file" id="file-input-script" accept=".txt,text/plain" hidden />
+              <div class="dz-label">drop script · click</div>
+              <div class="dz-progress" id="upload-progress-script" hidden></div>
+            </div>
+          </div>
+
+          <div class="sync-tool">
+            <div class="sync-tool-header">
+              <span class="st-title">audio sync</span>
+              <span class="st-status" id="pair-status">pick a video + an audio file</span>
+            </div>
+            <div class="sync-selectors">
+              <label class="sync-select-label"><span>video</span>
+                <select id="sync-video-select"><option value="">— none —</option></select></label>
+              <label class="sync-select-label"><span>audio</span>
+                <select id="sync-audio-select"><option value="">— none —</option></select></label>
+              <label class="sync-select-label"><span>model</span>
+                <select id="sync-model-select">
+                  <option value="sonnet">Sonnet 4.6 — fast</option>
+                  <option value="opus">Opus 4.7 — best</option>
+                  <option value="haiku">Haiku 4.5 — cheapest</option>
+                </select>
+              </label>
+            </div>
+            <div class="sync-actions">
+              <button type="button" id="sync-detect-btn" class="ghost" disabled>detect offset</button>
+              <button type="button" id="sync-apply-btn" disabled>sync &amp; mute video audio</button>
+            </div>
+            <div class="sync-batch-row" id="sync-batch-row">
+              <span class="sync-batch-hint">multi-take shoot? auto-match every video to its audio:</span>
+              <button type="button" id="sync-batch-btn" class="ghost">auto-pair folder…</button>
+            </div>
+            <div class="sync-batch-form" id="sync-batch-form" hidden>
+              <div class="batch-form-title">auto-pair a folder</div>
+              <label class="batch-field"><span>folder</span>
+                <select id="batch-folder-select"></select></label>
+              <label class="batch-field"><span>or path</span>
+                <input type="text" id="batch-folder-input" placeholder="videos/shoot_2026_04_30" /></label>
+              <label class="batch-field"><span>threshold</span>
+                <input type="number" id="batch-threshold-input" value="1.5" min="0.5" max="10" step="0.1" />
+                <span class="batch-hint-inline">conf ≥ this counts as match (1.5 · 2.0 strict)</span>
+              </label>
+              <label class="batch-field"><span>model</span>
+                <select id="batch-model-select">
+                  <option value="sonnet">Sonnet 4.6</option>
+                  <option value="opus">Opus 4.7</option>
+                  <option value="haiku">Haiku 4.5</option>
+                </select>
+              </label>
+              <div class="batch-scan-result" id="batch-scan-result"></div>
+              <div class="sync-batch-actions">
+                <button type="button" id="batch-cancel-btn" class="ghost">cancel</button>
+                <button type="button" id="batch-scan-btn" class="ghost">scan</button>
+                <button type="button" id="batch-run-btn" disabled>match &amp; sync all</button>
+              </div>
+            </div>
+          </div>
+          <div class="files">
+            <div class="files-header">
+              <span>output files</span>
+              <button id="refresh-files" type="button" title="refresh">↻</button>
+            </div>
+            <ul class="file-list" id="file-list"></ul>
+          </div>
+        </div><!-- /right-bottom-pane -->
+      </aside>
+
+    </div><!-- /workspace-panels -->
+
+    <!-- ═══════════════════════ TIMELINE DOCK ═══════════════════
+         Full-width editor timeline. Fed by /api/timeline/manifest,
+         driven by timeline.js. Kino's finished assemblies land here
+         as tracks the user can inspect, trim, and re-render. -->
+    <div class="timeline-dock" id="timeline-dock">
+      <div class="kt-toolbar">
+        <span class="kt-title">TIMELINE</span>
+        <span class="kt-tools">
+          <button type="button" class="kt-tool active" data-tool="select" title="selection tool — move / trim / reorder (V)">▲ V</button>
+          <button type="button" class="kt-tool" data-tool="razor" title="razor tool — click a clip to split it (C)">✂ C</button>
+          <button type="button" class="kt-tool" data-tool="text" title="text tool — click the monitor or timeline to place a title (T)">T</button>
+        </span>
+        <select id="kt-run-select" title="edit run to load"></select>
+        <select id="kt-video-select" title="variant" hidden></select>
+        <button type="button" id="kt-reload" title="refresh run list">↻</button>
+        <span class="kt-status" id="kt-status"></span>
+        <span class="kt-flex"></span>
+        <span class="kt-dirty" id="kt-dirty" hidden>● unsaved edits</span>
+        <button type="button" id="kt-undo" disabled title="discard all timeline edits">undo all</button>
+        <button type="button" id="kt-ask-kino" disabled title="describe your edits to Kino in the composer">🎬 ask Kino to fix</button>
+        <button type="button" id="kt-rerender" class="kt-primary" disabled title="deterministically re-render this run from the edited timeline">⟳ re-render</button>
+        <span class="kt-zoom">
+          <button type="button" id="kt-zoom-out" title="zoom out">−</button>
+          <button type="button" id="kt-zoom-fit" title="fit to window">fit</button>
+          <button type="button" id="kt-zoom-in" title="zoom in">+</button>
+        </span>
+        <span class="kt-tc" id="kt-tc">00:00:00:00</span>
+      </div>
+      <div class="kt-body">
+        <div class="kt-headers" id="kt-headers"></div>
+        <div class="kt-lanes-scroll" id="kt-lanes-scroll">
+          <div class="kt-lanes" id="kt-lanes">
+            <div class="kt-ruler" id="kt-ruler"></div>
+            <div class="kt-playhead" id="kt-playhead"></div>
+          </div>
+        </div>
+      </div>
+      <div class="kt-inspector" id="kt-inspector" hidden></div>
+    </div>
+
+  </div><!-- /workspace -->
+
+  <!-- VO MODAL -->
+  <div class="vo-modal" id="vo-modal" hidden>
+    <div class="vo-modal-card">
+      <div class="vo-modal-header">
+        <span class="st-title">generate VO</span>
+        <button type="button" class="vo-modal-close" id="vo-modal-close">×</button>
+      </div>
+      <div class="vo-modal-body" id="vo-modal-body">
+        <div class="vo-row">
+          <label class="vo-label">voice</label>
+          <select id="vo-voice-select" class="vo-select"><option value="">— pick a voice —</option></select>
+          <button type="button" id="vo-refresh-voices" class="ghost vo-mini" title="refresh">↻ refresh</button>
+        </div>
+        <div class="vo-row">
+          <label class="vo-label">label</label>
+          <input type="text" id="vo-label-input" class="vo-select" placeholder="e.g. outro, intro, midroll" />
+        </div>
+        <div class="vo-row vo-text-row">
+          <label class="vo-label">VO text</label>
+          <textarea id="vo-text-input" class="vo-text" rows="6" placeholder="Type the exact words to synthesize."></textarea>
+        </div>
+        <div class="vo-row vo-advanced">
+          <label class="vo-label">stability</label>
+          <input type="number" id="vo-stability"   min="0" max="1" step="0.05" value="0.5"  class="vo-num" />
+          <label class="vo-label">similarity</label>
+          <input type="number" id="vo-similarity"  min="0" max="1" step="0.05" value="0.75" class="vo-num" />
+          <label class="vo-label">style</label>
+          <input type="number" id="vo-style"       min="0" max="1" step="0.05" value="0.0"  class="vo-num" />
+        </div>
+        <div class="vo-hint" id="vo-hint"></div>
+      </div>
+      <div class="vo-modal-footer">
+        <button type="button" id="vo-modal-cancel" class="ghost">cancel</button>
+        <button type="button" id="vo-modal-generate" disabled>generate</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ SHARED FOLDER PICKER MODAL ═════════ -->
+  <div class="dice-modal-overlay" id="folder-picker-modal" hidden>
+    <div class="dice-modal-card">
+      <div class="dice-modal-header">
+        <span class="dice-modal-title" id="fpm-title">📁 Select Folder</span>
+        <button type="button" class="dice-modal-close" id="fpm-close">×</button>
+      </div>
+      <div class="dice-modal-body" style="padding-bottom:8px">
+        <div class="dice-fsbrowser" id="fpm-browser" style="display:flex;flex-direction:column">
+          <div class="dfb-header">
+            <button type="button" class="dfb-up" id="fpm-up">↑ Up</button>
+            <span class="dfb-cwd" id="fpm-cwd">—</span>
+            <button type="button" class="dfb-select" id="fpm-select">✔ Use This Folder</button>
+          </div>
+          <ul class="dfb-list" id="fpm-list" style="max-height:260px"></ul>
+        </div>
+      </div>
+      <div class="dice-modal-footer">
+        <button type="button" class="ghost-btn" id="fpm-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ DICE FOLDER CONFIG MODAL ═══════════ -->
+  <div class="dice-modal-overlay" id="dice-modal" hidden>
+    <div class="dice-modal-card">
+      <div class="dice-modal-header">
+        <span class="dice-modal-title">🎲 Dice — Asset Folders</span>
+        <button type="button" class="dice-modal-close" id="dice-modal-close">×</button>
+      </div>
+
+      <div class="dice-modal-body">
+        <p class="dice-modal-hint">Point to your <strong>asset root folder</strong>. The asset root contains one folder per team (<code>Endurance/</code>, <code>Windows/</code>, <code>Bath/</code>), and each team folder contains <code>HOOKS/</code>, <code>B-Roll/</code>, <code>Music/</code>, <code>SFX/</code>, <code>Brand Guidelines/</code>, etc.</p>
+
+        <!-- Single root path row -->
+        <div class="dfr dfr-single">
+          <span class="dfr-label">ROOT</span>
+          <input type="text" class="dfr-input" id="dfr-root" placeholder="e.g. E:\Assets" spellcheck="false" />
+          <button type="button" class="dfr-browse" id="dfr-browse-root">Browse</button>
+        </div>
+
+        <!-- Active team status — surfaces which team scope the dice will use -->
+        <div class="dfr-team-status" id="dfr-team-status">
+          <span class="dts-label">SCOPED TO</span>
+          <span class="dts-value" id="dts-value">— pick a team in the sidebar —</span>
+        </div>
+
+        <!-- Discovered subfolders preview -->
+        <div class="dfr-discovered" id="dfr-discovered" hidden>
+          <span class="dfrd-label">found:</span>
+          <span class="dfrd-chips" id="dfrd-chips"></span>
+        </div>
+
+        <!-- Available team folders at the root (informational, helps verify setup) -->
+        <div class="dfr-teams-detected" id="dfr-teams-detected" hidden>
+          <span class="dfrd-label">team folders at root:</span>
+          <span class="dfrd-chips" id="dfrd-team-chips"></span>
+        </div>
+
+        <!-- Mini folder browser -->
+        <div class="dice-fsbrowser" id="dice-fsbrowser" hidden>
+          <div class="dfb-header">
+            <button type="button" class="dfb-up" id="dfb-up" title="Up one level">↑ Up</button>
+            <span class="dfb-cwd" id="dfb-cwd">—</span>
+            <button type="button" class="dfb-select" id="dfb-select">✔ Use This Folder</button>
+          </div>
+          <ul class="dfb-list" id="dfb-list"></ul>
+        </div>
+      </div>
+
+      <div class="dice-modal-footer">
+        <button type="button" id="dice-modal-cancel" class="ghost-btn">Cancel</button>
+        <button type="button" id="dice-modal-save" class="save-btn">Save Folders</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ VO + B-ROLL VARIANTS MODAL ═════════ -->
+  <div class="dice-modal-overlay" id="variants-modal" hidden>
+    <div class="dice-modal-card">
+      <div class="dice-modal-header">
+        <span class="dice-modal-title">🎬 Variants — VO + B-roll</span>
+        <button type="button" class="dice-modal-close" id="variants-modal-close">×</button>
+      </div>
+
+      <div class="dice-modal-body">
+        <p class="dice-modal-hint">
+          Kino writes the script <strong>N</strong> times (hook + body + CTA, different angles each, respecting brand guidelines under the team), generates a VO for each via ElevenLabs, composites with a random b-roll sequence from your folder, and burns captions. One click → N finished videos.
+        </p>
+
+        <label class="dice-field">
+          <span>script · seed <span class="opt">optional</span></span>
+          <textarea id="variants-script" rows="5" placeholder="Optional. Type a seed script to have Kino rewrite it N ways — OR leave BLANK to have Kino write the scripts from scratch off your Brand Guidelines. Blank mode requires a 'Brand Guidelines' folder (with a .txt/.md/.pdf/.docx doc) under the selected team."></textarea>
+        </label>
+        <p class="dice-modal-hint" style="margin-top:-4px">
+          💡 <strong>Leave the script blank</strong> to auto-generate from Brand Guidelines — Kino reads <code>&lt;asset_root&gt;/&lt;team&gt;/Brand Guidelines/</code>, picks the topic + angle itself, writes the VO, and lays b-roll under it. Requires a brand guideline doc in that folder.
+        </p>
+
+        <div class="dice-row">
+          <label class="dice-field">
+            <span>b-roll folder</span>
+            <input type="text" id="variants-broll" placeholder="auto from asset root + team" spellcheck="false" />
+          </label>
+          <button type="button" class="fpick-btn" data-target="variants-broll">Browse</button>
+        </div>
+
+        <div class="dice-row">
+          <label class="dice-field">
+            <span>voice <button type="button" id="variants-voice-refresh" class="ghost-mini" title="refetch from ElevenLabs">↻</button></span>
+            <select id="variants-voice"><option value="">— pick a voice —</option></select>
+          </label>
+        </div>
+
+        <div class="dice-row">
+          <label class="dice-field">
+            <span>count</span>
+            <input type="number" id="variants-count" min="1" max="10" step="1" value="5" />
+          </label>
+          <label class="dice-field">
+            <span>duration target (s)</span>
+            <input type="number" id="variants-duration" min="10" max="90" step="5" value="35" />
+          </label>
+          <label class="dice-field">
+            <span>aspect</span>
+            <select id="variants-aspect">
+              <option value="9x16" selected>9:16 vertical (1080×1920)</option>
+              <option value="1x1">1:1 square (1080×1080)</option>
+              <option value="16x9">16:9 horizontal (1920×1080)</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="dice-row">
+          <label class="dice-field">
+            <span>match b-roll to script <span class="opt">semantic = local CLIP, $0</span></span>
+            <select id="variants-match" title="Random = shuffled clip windows (fast). Semantic = local CLIP matches each VO line to its most relevant clip.">
+              <option value="random" selected>Random (fast)</option>
+              <option value="semantic">Semantic (match to VO)</option>
+            </select>
+          </label>
+          <label class="dice-field">
+            <span>weak-line fallback <span class="opt">semantic only</span></span>
+            <select id="variants-fallback" title="For lines the local library can't match well, fetch free Pexels/Pixabay stock footage and re-match.">
+              <option value="none" selected>none</option>
+              <option value="stock">free stock (Pexels/Pixabay)</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="dice-hg-toggle variants-hg-toggle" id="variants-heygen-label" title="Open the script with a HeyGen avatar speaking the hook line (first 3–5s), then cut to VO + b-roll for the body. Uses the avatar + voice picked in the Avatar tab.">
+          <input type="checkbox" id="variants-heygen-toggle" />
+          <span>HeyGen avatar hook (first 3–5s)</span>
+        </label>
+
+        <p class="dice-modal-hint">
+          Captions are forced to <strong>center frame</strong> (Meta-safe); each variant's hook line is also burned as a top-of-frame overlay inside the IG/FB safe zone. Brand guidelines are auto-discovered at <code>&lt;asset_root&gt;/&lt;team&gt;/Brand Guidelines/</code>. Output lands in <code>videos/edit/variants_&lt;timestamp&gt;/</code>.
+        </p>
+      </div>
+
+      <div class="dice-modal-footer">
+        <button type="button" id="variants-modal-cancel" class="ghost-btn">Cancel</button>
+        <button type="button" id="variants-modal-generate" class="save-btn">▶ Generate Variants</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ STREAMLINED AD MODAL ═══════════════ -->
+  <div class="dice-modal-overlay" id="streamlined-modal" hidden>
+    <div class="dice-modal-card">
+      <div class="dice-modal-header">
+        <span class="dice-modal-title">⚡ Streamlined Ad</span>
+        <button type="button" class="dice-modal-close" id="sa-close">×</button>
+      </div>
+
+      <div class="dice-modal-body">
+        <div class="format-row">
+          <label class="format-label">format</label>
+          <div class="chip-row" id="sa-format-row">
+            <button type="button" class="chip selected" data-sa-format="bullets">
+              <span>Bullets</span>
+              <span class="chip-meta">hook + selling points + CTA · music</span>
+            </button>
+            <button type="button" class="chip" data-sa-format="text-vo">
+              <span>Text + VO</span>
+              <span class="chip-meta">big hook read aloud, then CTA</span>
+            </button>
+          </div>
+        </div>
+
+        <p class="dice-modal-hint" id="sa-kino-hint">
+          Tick <strong>🎲 Kino</strong> on any piece to have Kino write it from your Brand Guidelines; leave it off to write your own. Mixing is fine — e.g. your hook, Kino's bullets.
+        </p>
+
+        <label class="dice-field">
+          <span>hook
+            <label class="sa-kino-piece" title="let Kino write the hook"><input type="checkbox" id="sa-kino-hook" class="sa-kino-cb" /> 🎲 Kino</label>
+          </span>
+          <textarea id="sa-hook" rows="2" placeholder="An Endurance protection plan includes:"></textarea>
+        </label>
+
+        <label class="dice-field" id="sa-bullets-field">
+          <span>bullets <span class="opt">one per line</span>
+            <label class="sa-kino-piece" title="let Kino write the bullets"><input type="checkbox" id="sa-kino-bullets" class="sa-kino-cb" /> 🎲 Kino</label>
+          </span>
+          <textarea id="sa-bullets" rows="4" placeholder="The freedom to pick the mechanic you trust&#10;Zero bills for covered vehicle repairs&#10;24/7 roadside assistance"></textarea>
+        </label>
+
+        <label class="dice-field">
+          <span>CTA
+            <label class="sa-kino-piece" title="let Kino write the CTA"><input type="checkbox" id="sa-kino-cta" class="sa-kino-cb" /> 🎲 Kino</label>
+          </span>
+          <input type="text" id="sa-cta" placeholder="Tap below for your free quote" />
+        </label>
+
+        <label class="dice-field">
+          <span>
+            <label class="sa-disc-toggle" title="fine print burned at the bottom of the frame"><input type="checkbox" id="sa-disclaimer-on" /> disclaimer</label>
+            <span class="opt">18pt · white · centered at the bottom of the frame</span>
+          </span>
+          <textarea id="sa-disclaimer" rows="2" placeholder="e.g. Savings vary by home and product. Not a guarantee of specific results. See representative for details." disabled></textarea>
+        </label>
+
+        <div class="dice-row">
+          <label class="dice-field">
+            <span>background <span class="opt">file or folder = random pick</span></span>
+            <input type="text" id="sa-background" placeholder="auto: <team>/B-Roll" spellcheck="false" />
+          </label>
+          <button type="button" class="fpick-btn" data-target="sa-background">Browse</button>
+        </div>
+
+        <div class="dice-row">
+          <label class="dice-field">
+            <span>music <span class="opt">file or folder</span></span>
+            <input type="text" id="sa-music" placeholder="auto: <asset root>/Music" spellcheck="false" />
+          </label>
+          <button type="button" class="fpick-btn" data-target="sa-music">Browse</button>
+        </div>
+
+        <div class="dice-row" id="sa-brand-row">
+          <label class="dice-field">
+            <span>logo <span class="opt">overlaid top-center</span></span>
+            <select id="sa-logo"><option value="">— none —</option></select>
+          </label>
+          <label class="dice-field sa-brand-colors">
+            <span>
+              <label class="sa-brand-toggle"><input type="checkbox" id="sa-brand-on" /> brand colors</label>
+            </span>
+            <span class="sa-swatch-row">
+              <input type="color" id="sa-brand-primary" value="#0b4f9e" title="primary — CTA box / big hook box" disabled />
+              <input type="color" id="sa-brand-accent" value="#ffffff" title="accent — bullet chips" disabled />
+              <button type="button" id="sa-brand-save" class="ghost-mini" title="save logo + colors as this team's default (writes Guidelines/brand.json)">save as team default</button>
+            </span>
+          </label>
+        </div>
+
+        <div class="dice-row" id="sa-voice-row" hidden>
+          <label class="dice-field">
+            <span>voice <button type="button" id="sa-voice-refresh" class="ghost-mini">↻</button></span>
+            <select id="sa-voice"><option value="">— pick a voice —</option></select>
+          </label>
+        </div>
+
+        <div class="dice-row">
+          <label class="dice-field">
+            <span>duration (s)</span>
+            <input type="number" id="sa-duration" min="6" max="30" step="1" value="15" />
+          </label>
+          <label class="dice-field">
+            <span>aspect</span>
+            <select id="sa-aspect">
+              <option value="9x16" selected>9:16 vertical</option>
+              <option value="1x1">1:1 square</option>
+              <option value="16x9">16:9 horizontal</option>
+            </select>
+          </label>
+          <label class="dice-field">
+            <span>count</span>
+            <input type="number" id="sa-count" min="1" max="6" step="1" value="1" title="renders N ads with different random background/music picks" />
+          </label>
+        </div>
+
+        <p class="dice-modal-hint" id="sa-hint">
+          Deterministic render — a few seconds per ad, no AI cost (Text + VO uses ElevenLabs, ~cents). Output lands in <code>videos/edit/streamlined_&lt;timestamp&gt;/</code> and is editable in the timeline.
+        </p>
+        <div class="dice-modal-hint" id="sa-status" hidden></div>
+        <div class="kf-prog" id="sa-progress" hidden>
+          <div class="kf-prog-track"><div class="kf-prog-fill" id="sa-prog-fill"></div></div>
+          <span class="kf-prog-label" id="sa-prog-label"></span>
+        </div>
+      </div>
+
+      <div class="dice-modal-footer">
+        <button type="button" id="sa-cancel" class="ghost-btn">Cancel</button>
+        <button type="button" id="sa-generate" class="save-btn">⚡ Generate</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/app.js?v=20260720d"></script>
+  <script src="/timeline.js?v=20260720a"></script>
+  <script src="/manager.js?v=20260716a"></script>
+  <script src="/streamlined.js?v=20260720d"></script>
+  <script src="/genai.js?v=20260720b"></script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+{
+  "_comment": "Job-type -> Claude model routing for Veditor Studio. server.py should classify the job (reuse _classify_job + the prompt-prefix markers), look up the model here, and pass it to --model. Anything not listed falls through to `default`. Rationale: copywriting/deterministic-render jobs do not need Opus-level reasoning; only genuine multi-step planning/review does. See COST_OPTIMIZATION_PLAN.md.",
+
+  "default": "sonnet",
+
+  "routes": {
+    "variants":     "sonnet",
+    "streamlined":  "sonnet",
+    "dice":         "sonnet",
+    "hook":         "haiku",
+    "captions":     "haiku",
+    "split-hooks":  "haiku",
+    "stitch":       "sonnet",
+    "sync":         "haiku",
+    "avatar":       "sonnet",
+    "pipeline":     "opus",
+    "chat":         "opus"
+  },
+
+  "prompt_markers": {
+    "_comment": "Prefix strings to detect job type from the prompt head (uppercased), mirroring _classify_job. STREAMLINED AD is added because the current classifier misses it and those jobs fall to 'chat'/Opus.",
+    "VARIANT FACTORY": "variants",
+    "STREAMLINED AD":  "streamlined",
+    "ROLL THE DICE":   "dice",
+    "DICE":            "dice",
+    "STITCH":          "stitch",
+    "SYNC":            "sync",
+    "SPLIT":           "split-hooks",
+    "HEYGEN":          "avatar",
+    "AVATAR":          "avatar",
+    "PIPELINE":        "pipeline",
+    "CAPTION":         "captions",
+    "HOOK":            "hook"
+  },
+
+  "notes": {
+    "copy_offload": "When copy_gen.py (local Ollama) is wired in, variants/streamlined/hook stop needing Claude for the wordsmithing at all — Claude Code just orchestrates and can run on Haiku.",
+    "override": "A per-request `model` from the UI should still win over this map, so power users can force Opus when they want it.",
+    "opus_reserved_for": "genuine multi-step reasoning, cross-file review, and motion-graphics design work — not deterministic renders or copywriting."
+  }
+}

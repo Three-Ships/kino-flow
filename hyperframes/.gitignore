@@ -1,0 +1,101 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docs media — served from CDN, not committed.
+# Regenerate with scripts/generate-{catalog,template}-previews.ts then upload
+# with `bun run upload:docs-images`. Add explicit negations below for any
+# non-generated assets (logos, svgs) that should stay in the repo.
+docs/images/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Test
+coverage/
+.debug/
+
+# Producer regression test failures (generated debugging artifacts)
+packages/producer/tests/*/failures/
+packages/producer/tests/parity/fixtures/hyperframe.runtime.iife.js
+
+# Player perf test results (generated each run, attached as CI artifact)
+packages/player/tests/perf/results/
+
+# Rendered output (not test fixtures — those use git LFS)
+output/
+renders/
+!packages/producer/tests/*/output/
+
+# Composition source media (large binaries)
+compositions/**/*.mp4
+compositions/**/*.mov
+compositions/**/*.MOV
+
+# npm pack artifacts
+*.tgz
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temporary
+tmp/
+.tmp/
+
+# Generated files
+packages/core/src/generated/
+packages/producer/src/services/fontData.generated.ts
+
+# Test artifacts
+my-video/
+examples/
+packages/studio/data/
+.desloppify/
+.worktrees/
+
+# Playwright MCP browser cache
+.playwright-mcp/
+
+# Installed skills (user-specific)
+.agents/
+.claude/skills/
+skills-lock.json
+
+# Skills from other PRs (not managed here)
+skills/hyperframes-animation-map/
+skills/hyperframes-contrast/
+
+# Capture outputs
+captures/
+# Legacy test captures at repo root (use captures/ instead)
+*-capture/
+*-demo/
+*-ad/
+*-tour/
+*-brand/
+
+# Local regression-test and video project scratch directories.
+# These hold per-site captures, compositions, narration audio, rendered MP4s.
+cursor-tests/
+basecamp-video/
+launch-video*/
+ab-test/
+compositions/
+video-6-2-patched/
+claude-design-hyperframes-video/

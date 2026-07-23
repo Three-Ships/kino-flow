@@ -1,0 +1,524 @@
+[
+  {
+    "name": "app-showcase",
+    "type": "block",
+    "title": "App Showcase",
+    "description": "Fitness app product showcase with three floating smartphone screens",
+    "tags": [
+      "showcase",
+      "app",
+      "3d"
+    ],
+    "href": "/catalog/blocks/app-showcase",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/app-showcase.png"
+  },
+  {
+    "name": "chromatic-radial-split",
+    "type": "block",
+    "title": "Chromatic Radial Split",
+    "description": "Shader transition with chromatic aberration radial split",
+    "tags": [
+      "transition",
+      "shader"
+    ],
+    "href": "/catalog/blocks/chromatic-radial-split",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/chromatic-radial-split.png"
+  },
+  {
+    "name": "cinematic-zoom",
+    "type": "block",
+    "title": "Cinematic Zoom",
+    "description": "Shader transition with dramatic zoom blur",
+    "tags": [
+      "transition",
+      "shader"
+    ],
+    "href": "/catalog/blocks/cinematic-zoom",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/cinematic-zoom.png"
+  },
+  {
+    "name": "cross-warp-morph",
+    "type": "block",
+    "title": "Cross Warp Morph",
+    "description": "Shader transition with cross-warped morphing",
+    "tags": [
+      "transition",
+      "shader"
+    ],
+    "href": "/catalog/blocks/cross-warp-morph",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/cross-warp-morph.png"
+  },
+  {
+    "name": "data-chart",
+    "type": "block",
+    "title": "Data Chart",
+    "description": "Animated bar + line chart with staggered reveal, NYT-style typography, and value labels",
+    "tags": [
+      "data",
+      "chart",
+      "statistics"
+    ],
+    "href": "/catalog/blocks/data-chart",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/data-chart.png"
+  },
+  {
+    "name": "domain-warp-dissolve",
+    "type": "block",
+    "title": "Domain Warp Dissolve",
+    "description": "Shader transition with fractal noise domain warping",
+    "tags": [
+      "transition",
+      "shader"
+    ],
+    "href": "/catalog/blocks/domain-warp-dissolve",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/domain-warp-dissolve.png"
+  },
+  {
+    "name": "flash-through-white",
+    "type": "block",
+    "title": "Flash Through White",
+    "description": "Shader transition with white flash crossfade",
+    "tags": [
+      "transition",
+      "shader"
+    ],
+    "href": "/catalog/blocks/flash-through-white",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/flash-through-white.png"
+  },
+  {
+    "name": "flowchart",
+    "type": "block",
+    "title": "Flowchart",
+    "description": "Animated decision tree with SVG connectors, sticky-note nodes, cursor interaction, and typing correction",
+    "tags": [
+      "diagram",
+      "flowchart",
+      "interactive"
+    ],
+    "href": "/catalog/blocks/flowchart",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/flowchart.png"
+  },
+  {
+    "name": "glitch",
+    "type": "block",
+    "title": "Glitch",
+    "description": "Shader transition with digital glitch artifacts",
+    "tags": [
+      "transition",
+      "shader"
+    ],
+    "href": "/catalog/blocks/glitch",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/glitch.png"
+  },
+  {
+    "name": "grain-overlay",
+    "type": "component",
+    "title": "Grain Overlay",
+    "description": "Animated film grain texture overlay using CSS keyframes — adds warmth and analog character to any composition",
+    "tags": [
+      "texture",
+      "grain",
+      "overlay",
+      "film"
+    ],
+    "href": "/catalog/components/grain-overlay",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/grain-overlay.png"
+  },
+  {
+    "name": "gravitational-lens",
+    "type": "block",
+    "title": "Gravitational Lens",
+    "description": "Shader transition with gravitational lensing distortion",
+    "tags": [
+      "transition",
+      "shader"
+    ],
+    "href": "/catalog/blocks/gravitational-lens",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/gravitational-lens.png"
+  },
+  {
+    "name": "grid-pixelate-wipe",
+    "type": "component",
+    "title": "Grid Pixelate Wipe",
+    "description": "Transition effect where the screen dissolves into a grid of squares that fade out with staggered timing — use between scenes",
+    "tags": [
+      "transition",
+      "wipe",
+      "grid",
+      "pixelate"
+    ],
+    "href": "/catalog/components/grid-pixelate-wipe",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/grid-pixelate-wipe.png"
+  },
+  {
+    "name": "instagram-follow",
+    "type": "block",
+    "title": "Instagram Follow",
+    "description": "Animated Instagram follow overlay with profile card and follow button",
+    "tags": [
+      "social",
+      "overlay",
+      "instagram"
+    ],
+    "href": "/catalog/blocks/instagram-follow",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/instagram-follow.png"
+  },
+  {
+    "name": "light-leak",
+    "type": "block",
+    "title": "Light Leak",
+    "description": "Shader transition with cinematic light leak overlay",
+    "tags": [
+      "transition",
+      "shader"
+    ],
+    "href": "/catalog/blocks/light-leak",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/light-leak.png"
+  },
+  {
+    "name": "logo-outro",
+    "type": "block",
+    "title": "Logo Outro",
+    "description": "Cinematic logo reveal with piece-by-piece assembly, glow bloom, tagline fade-in, and URL pill",
+    "tags": [
+      "branding",
+      "outro",
+      "logo"
+    ],
+    "href": "/catalog/blocks/logo-outro",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/logo-outro.png"
+  },
+  {
+    "name": "macos-notification",
+    "type": "block",
+    "title": "macOS Notification",
+    "description": "Animated macOS-style notification banner with app icon and message",
+    "tags": [
+      "social",
+      "overlay",
+      "notification"
+    ],
+    "href": "/catalog/blocks/macos-notification",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/macos-notification.png"
+  },
+  {
+    "name": "reddit-post",
+    "type": "block",
+    "title": "Reddit Post Card",
+    "description": "Animated Reddit post card overlay with upvotes and comments",
+    "tags": [
+      "social",
+      "overlay",
+      "reddit"
+    ],
+    "href": "/catalog/blocks/reddit-post",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/reddit-post.png"
+  },
+  {
+    "name": "ridged-burn",
+    "type": "block",
+    "title": "Ridged Burn",
+    "description": "Shader transition with ridged turbulence burn effect",
+    "tags": [
+      "transition",
+      "shader"
+    ],
+    "href": "/catalog/blocks/ridged-burn",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/ridged-burn.png"
+  },
+  {
+    "name": "ripple-waves",
+    "type": "block",
+    "title": "Ripple Waves",
+    "description": "Shader transition with concentric ripple wave distortion",
+    "tags": [
+      "transition",
+      "shader"
+    ],
+    "href": "/catalog/blocks/ripple-waves",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/ripple-waves.png"
+  },
+  {
+    "name": "sdf-iris",
+    "type": "block",
+    "title": "SDF Iris",
+    "description": "Shader transition with signed distance field iris reveal",
+    "tags": [
+      "transition",
+      "shader"
+    ],
+    "href": "/catalog/blocks/sdf-iris",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/sdf-iris.png"
+  },
+  {
+    "name": "shimmer-sweep",
+    "type": "component",
+    "title": "Shimmer Sweep",
+    "description": "Animated light sweep across text or elements using a CSS gradient mask — ideal for AI accents and premium reveals",
+    "tags": [
+      "text",
+      "shimmer",
+      "highlight",
+      "effect"
+    ],
+    "href": "/catalog/components/shimmer-sweep",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/components/shimmer-sweep.png"
+  },
+  {
+    "name": "spotify-card",
+    "type": "block",
+    "title": "Spotify Now Playing",
+    "description": "Animated Spotify now-playing card with album art and progress bar",
+    "tags": [
+      "social",
+      "overlay",
+      "spotify"
+    ],
+    "href": "/catalog/blocks/spotify-card",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/spotify-card.png"
+  },
+  {
+    "name": "swirl-vortex",
+    "type": "block",
+    "title": "Swirl Vortex",
+    "description": "Shader transition with swirling vortex distortion",
+    "tags": [
+      "transition",
+      "shader"
+    ],
+    "href": "/catalog/blocks/swirl-vortex",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/swirl-vortex.png"
+  },
+  {
+    "name": "thermal-distortion",
+    "type": "block",
+    "title": "Thermal Distortion",
+    "description": "Shader transition with heat haze thermal distortion",
+    "tags": [
+      "transition",
+      "shader"
+    ],
+    "href": "/catalog/blocks/thermal-distortion",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/thermal-distortion.png"
+  },
+  {
+    "name": "tiktok-follow",
+    "type": "block",
+    "title": "TikTok Follow",
+    "description": "Animated TikTok follow overlay with profile card and follow button",
+    "tags": [
+      "social",
+      "overlay",
+      "tiktok"
+    ],
+    "href": "/catalog/blocks/tiktok-follow",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/tiktok-follow.png"
+  },
+  {
+    "name": "transitions-3d",
+    "type": "block",
+    "title": "3D Transitions",
+    "description": "Showcase of 3D perspective flip and rotate transitions",
+    "tags": [
+      "transition",
+      "showcase"
+    ],
+    "href": "/catalog/blocks/transitions-3d",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-3d.png"
+  },
+  {
+    "name": "transitions-blur",
+    "type": "block",
+    "title": "Blur Transitions",
+    "description": "Showcase of blur-based transitions between scenes",
+    "tags": [
+      "transition",
+      "showcase"
+    ],
+    "href": "/catalog/blocks/transitions-blur",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-blur.png"
+  },
+  {
+    "name": "transitions-cover",
+    "type": "block",
+    "title": "Cover Transitions",
+    "description": "Showcase of cover/uncover slide transitions",
+    "tags": [
+      "transition",
+      "showcase"
+    ],
+    "href": "/catalog/blocks/transitions-cover",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-cover.png"
+  },
+  {
+    "name": "transitions-destruction",
+    "type": "block",
+    "title": "Destruction Transitions",
+    "description": "Showcase of destructive break-apart transitions",
+    "tags": [
+      "transition",
+      "showcase"
+    ],
+    "href": "/catalog/blocks/transitions-destruction",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-destruction.png"
+  },
+  {
+    "name": "transitions-dissolve",
+    "type": "block",
+    "title": "Dissolve Transitions",
+    "description": "Showcase of dissolve and fade transitions",
+    "tags": [
+      "transition",
+      "showcase"
+    ],
+    "href": "/catalog/blocks/transitions-dissolve",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-dissolve.png"
+  },
+  {
+    "name": "transitions-distortion",
+    "type": "block",
+    "title": "Distortion Transitions",
+    "description": "Showcase of warp and distortion transitions",
+    "tags": [
+      "transition",
+      "showcase"
+    ],
+    "href": "/catalog/blocks/transitions-distortion",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-distortion.png"
+  },
+  {
+    "name": "transitions-grid",
+    "type": "block",
+    "title": "Grid Transitions",
+    "description": "Showcase of grid-based tile transitions",
+    "tags": [
+      "transition",
+      "showcase"
+    ],
+    "href": "/catalog/blocks/transitions-grid",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-grid.png"
+  },
+  {
+    "name": "transitions-light",
+    "type": "block",
+    "title": "Light Transitions",
+    "description": "Showcase of light-based glow and flash transitions",
+    "tags": [
+      "transition",
+      "showcase"
+    ],
+    "href": "/catalog/blocks/transitions-light",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-light.png"
+  },
+  {
+    "name": "transitions-mechanical",
+    "type": "block",
+    "title": "Mechanical Transitions",
+    "description": "Showcase of mechanical shutter and iris transitions",
+    "tags": [
+      "transition",
+      "showcase"
+    ],
+    "href": "/catalog/blocks/transitions-mechanical",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-mechanical.png"
+  },
+  {
+    "name": "transitions-other",
+    "type": "block",
+    "title": "Other Transitions",
+    "description": "Showcase of miscellaneous creative transitions",
+    "tags": [
+      "transition",
+      "showcase"
+    ],
+    "href": "/catalog/blocks/transitions-other",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-other.png"
+  },
+  {
+    "name": "transitions-push",
+    "type": "block",
+    "title": "Push Transitions",
+    "description": "Showcase of push and slide transitions",
+    "tags": [
+      "transition",
+      "showcase"
+    ],
+    "href": "/catalog/blocks/transitions-push",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-push.png"
+  },
+  {
+    "name": "transitions-radial",
+    "type": "block",
+    "title": "Radial Transitions",
+    "description": "Showcase of radial wipe and reveal transitions",
+    "tags": [
+      "transition",
+      "showcase"
+    ],
+    "href": "/catalog/blocks/transitions-radial",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-radial.png"
+  },
+  {
+    "name": "transitions-scale",
+    "type": "block",
+    "title": "Scale Transitions",
+    "description": "Showcase of scale and zoom transitions",
+    "tags": [
+      "transition",
+      "showcase"
+    ],
+    "href": "/catalog/blocks/transitions-scale",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/transitions-scale.png"
+  },
+  {
+    "name": "ui-3d-reveal",
+    "type": "block",
+    "title": "3D UI Reveal",
+    "description": "Perspective 3D reveal animation for UI elements",
+    "tags": [
+      "showcase",
+      "3d",
+      "reveal"
+    ],
+    "href": "/catalog/blocks/ui-3d-reveal",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/ui-3d-reveal.png"
+  },
+  {
+    "name": "whip-pan",
+    "type": "block",
+    "title": "Whip Pan",
+    "description": "Shader transition simulating a fast camera whip pan",
+    "tags": [
+      "transition",
+      "shader"
+    ],
+    "href": "/catalog/blocks/whip-pan",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/whip-pan.png"
+  },
+  {
+    "name": "x-post",
+    "type": "block",
+    "title": "X Post Card",
+    "description": "Animated X/Twitter post card overlay with engagement metrics",
+    "tags": [
+      "social",
+      "overlay",
+      "twitter"
+    ],
+    "href": "/catalog/blocks/x-post",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/x-post.png"
+  },
+  {
+    "name": "yt-lower-third",
+    "type": "block",
+    "title": "YouTube Lower Third",
+    "description": "Animated YouTube subscribe lower third with avatar and channel info",
+    "tags": [
+      "social",
+      "overlay",
+      "youtube"
+    ],
+    "href": "/catalog/blocks/yt-lower-third",
+    "preview": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/yt-lower-third.png"
+  }
+]

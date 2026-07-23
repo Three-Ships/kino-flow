@@ -1,0 +1,54 @@
+# ─── Secrets (never commit) ───────────────────────────────
+.env
+.env.*
+*.env
+!.env.example
+!*.env.example
+*.pem
+*.key
+credentials.json
+
+# ─── Dependencies / virtualenvs ───────────────────────────
+node_modules/
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ─── Source media (too large for git) ─────────────────────
+videos/
+Final Output/
+*.mp4
+*.mov
+*.MP4
+*.MOV
+*.mkv
+*.avi
+*.wav
+*.mp3
+*.m4a
+
+# ─── Generated / build outputs ────────────────────────────
+dist/
+build/
+*.log
+hyperframes/packages/*/tests/**/output/
+
+# ─── Caches / transcripts ─────────────────────────────────
+.transcripts/
+*.cache
+
+# ─── Temporary vendored-clone git backups (restored after push) ───
+**/.git_disabled/
+
+# ─── OS / editor junk ─────────────────────────────────────
+.DS_Store
+._*
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/

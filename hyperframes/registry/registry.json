@@ -1,0 +1,207 @@
+{
+  "$schema": "https://hyperframes.heygen.com/schema/registry.json",
+  "name": "hyperframes",
+  "homepage": "https://hyperframes.heygen.com",
+  "items": [
+    {
+      "name": "warm-grain",
+      "type": "hyperframes:example"
+    },
+    {
+      "name": "play-mode",
+      "type": "hyperframes:example"
+    },
+    {
+      "name": "swiss-grid",
+      "type": "hyperframes:example"
+    },
+    {
+      "name": "vignelli",
+      "type": "hyperframes:example"
+    },
+    {
+      "name": "decision-tree",
+      "type": "hyperframes:example"
+    },
+    {
+      "name": "kinetic-type",
+      "type": "hyperframes:example"
+    },
+    {
+      "name": "product-promo",
+      "type": "hyperframes:example"
+    },
+    {
+      "name": "nyt-graph",
+      "type": "hyperframes:example"
+    },
+    {
+      "name": "data-chart",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "flowchart",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "logo-outro",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "grain-overlay",
+      "type": "hyperframes:component"
+    },
+    {
+      "name": "shimmer-sweep",
+      "type": "hyperframes:component"
+    },
+    {
+      "name": "grid-pixelate-wipe",
+      "type": "hyperframes:component"
+    },
+    {
+      "name": "instagram-follow",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "tiktok-follow",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "yt-lower-third",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "x-post",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "reddit-post",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "spotify-card",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "macos-notification",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "app-showcase",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "ui-3d-reveal",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "domain-warp-dissolve",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "ridged-burn",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "whip-pan",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "sdf-iris",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "ripple-waves",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "gravitational-lens",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "cinematic-zoom",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "chromatic-radial-split",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "glitch",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "swirl-vortex",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "thermal-distortion",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "flash-through-white",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "cross-warp-morph",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "light-leak",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "transitions-3d",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "transitions-blur",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "transitions-cover",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "transitions-destruction",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "transitions-dissolve",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "transitions-distortion",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "transitions-grid",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "transitions-light",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "transitions-mechanical",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "transitions-other",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "transitions-push",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "transitions-radial",
+      "type": "hyperframes:block"
+    },
+    {
+      "name": "transitions-scale",
+      "type": "hyperframes:block"
+    }
+  ]
+}

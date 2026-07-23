@@ -1,0 +1,338 @@
+name: CI
+
+on:
+  pull_request:
+    # `edited` is required so the workflow re-fires when a PR's base ref is
+    # set back to `main` after a Graphite stack restack momentarily flips
+    # the base off of `main`. Without it, `pull_request` triggers are not
+    # re-evaluated on `base_ref_changed`, leaving required checks skipped
+    # for that head SHA forever.
+    types: [opened, synchronize, reopened, edited]
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+    steps:
+      # Force git-based change detection instead of the pull_request REST API.
+      # The API path can fail the whole workflow on transient listFiles
+      # timeouts before any real CI work starts.
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+      - uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4
+        id: filter
+        with:
+          token: ""
+          filters: |
+            code:
+              - "packages/**"
+              - "scripts/**"
+              - "package.json"
+              - "bun.lock"
+              - "tsconfig*.json"
+              - "Dockerfile*"
+              - ".github/workflows/**"
+
+  build:
+    name: Build
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          lfs: true
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+
+  lint:
+    name: Lint
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          lfs: true
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - run: bun install --frozen-lockfile
+      - run: bun run lint
+
+  format:
+    name: Format
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          lfs: true
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - run: bun install --frozen-lockfile
+      - run: bun run format:check
+
+  typecheck:
+    name: Typecheck
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          lfs: true
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+      - run: bun run --filter '*' typecheck
+
+  test:
+    name: Test
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          lfs: true
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - run: bun install --frozen-lockfile
+      - run: bun run --cwd packages/core build:hyperframes-runtime
+      - run: bun run --filter '!@hyperframes/producer' test
+
+  test-runtime-contract:
+    name: "Test: runtime contract"
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          lfs: true
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - run: bun install --frozen-lockfile
+      - run: bun run --filter @hyperframes/core test:hyperframe-runtime-ci
+
+  smoke-global-install:
+    name: "Smoke: global install"
+    needs: [changes, build]
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          lfs: true
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+
+      # Pack the CLI as a tarball (simulates what `npm publish` produces)
+      - name: Pack CLI tarball
+        run: cd packages/cli && npm pack
+
+      # Install globally using --prefix to avoid sudo
+      - name: Install globally via npm
+        run: npm install -g --prefix /tmp/hf-smoke ./packages/cli/hyperframes-cli-*.tgz
+
+      # Scaffold a blank project
+      - name: Init blank project
+        run: |
+          export PATH="/tmp/hf-smoke/bin:$PATH"
+          mkdir /tmp/hf-project && cd /tmp/hf-project
+          hyperframes init test-project --example blank
+
+      # Start preview, probe the runtime endpoint, assert no esbuild errors
+      - name: Smoke-test preview server
+        run: |
+          export PATH="/tmp/hf-smoke/bin:$PATH"
+          cd /tmp/hf-project/test-project
+
+          # Start the preview server in the background; capture stderr
+          CI=true hyperframes preview --port 3099 2>/tmp/hf-stderr.log &
+          SERVER_PID=$!
+
+          # Wait for the server to be ready (up to 15 s)
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3099/ >/dev/null 2>&1; then
+              break
+            fi
+            sleep 0.5
+          done
+
+          # Probe the runtime JS endpoint
+          BODY=$(curl -sf http://localhost:3099/api/runtime.js | head -c 200 || true)
+          if [ -z "$BODY" ]; then
+            echo "FAIL: /api/runtime.js returned empty response"
+            kill $SERVER_PID 2>/dev/null || true
+            cat /tmp/hf-stderr.log
+            exit 1
+          fi
+
+          kill $SERVER_PID 2>/dev/null || true
+          wait $SERVER_PID 2>/dev/null || true
+
+          # Assert stderr does not contain esbuild / runtime load errors
+          if grep -qE '✘ \[ERROR\]|Failed to load runtime' /tmp/hf-stderr.log; then
+            echo "FAIL: preview emitted runtime errors:"
+            cat /tmp/hf-stderr.log
+            exit 1
+          fi
+
+          echo "PASS: global install smoke test succeeded"
+
+  cli-smoke-required:
+    name: "CLI smoke (required)"
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Build monorepo
+        run: bun run build
+
+      - name: Create smoke input video
+        run: |
+          set -euo pipefail
+          ffmpeg -hide_banner -loglevel error \
+            -f lavfi -i testsrc2=size=640x360:rate=30 \
+            -f lavfi -i sine=frequency=880:sample_rate=48000 \
+            -t 3 \
+            -c:v libx264 \
+            -pix_fmt yuv420p \
+            -c:a aac \
+            -shortest \
+            -y /tmp/hf-cli-input.mp4
+          test -s /tmp/hf-cli-input.mp4
+
+      - name: Smoke-test CLI from monorepo source
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/hf-cli-inside
+
+          bun run --filter @hyperframes/cli dev -- init /tmp/hf-cli-inside \
+            --example warm-grain \
+            --video /tmp/hf-cli-input.mp4 \
+            --skip-transcribe \
+            --non-interactive \
+            --skip-skills
+
+          bun run --filter @hyperframes/cli dev -- lint /tmp/hf-cli-inside
+          bun run --filter @hyperframes/cli dev -- validate /tmp/hf-cli-inside --timeout 3000
+          bun run --filter @hyperframes/cli dev -- render /tmp/hf-cli-inside \
+            --quality standard \
+            --workers auto \
+            --strict \
+            --output /tmp/hf-cli-inside/renders/inside.mp4
+
+          test -s /tmp/hf-cli-inside/renders/inside.mp4
+
+      - name: Pack CLI tarball
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/hf-cli-pack
+          cd packages/cli
+          PACKED_TARBALL="$(npm pack --pack-destination /tmp/hf-cli-pack | tail -n 1)"
+          test -n "$PACKED_TARBALL"
+          test -f "/tmp/hf-cli-pack/$PACKED_TARBALL"
+          echo "HF_CLI_TARBALL=/tmp/hf-cli-pack/$PACKED_TARBALL" >> "$GITHUB_ENV"
+
+      - name: Install packed CLI outside monorepo
+        run: |
+          set -euo pipefail
+          npm install -g --prefix /tmp/hf-cli-global "$HF_CLI_TARBALL"
+
+      - name: Smoke-test packed CLI outside monorepo
+        run: |
+          set -euo pipefail
+          export PATH="/tmp/hf-cli-global/bin:$PATH"
+          rm -rf /tmp/hf-cli-outside
+
+          hyperframes init /tmp/hf-cli-outside \
+            --example warm-grain \
+            --video /tmp/hf-cli-input.mp4 \
+            --skip-transcribe \
+            --non-interactive \
+            --skip-skills
+
+          hyperframes lint /tmp/hf-cli-outside
+          hyperframes validate /tmp/hf-cli-outside --timeout 3000
+          hyperframes render /tmp/hf-cli-outside \
+            --quality standard \
+            --workers auto \
+            --strict \
+            --output /tmp/hf-cli-outside/renders/outside.mp4
+
+          test -s /tmp/hf-cli-outside/renders/outside.mp4
+
+  semantic-pr-title:
+    name: Semantic PR title
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: amannn/action-semantic-pull-request@e32d7e603df1aa1ba07e981f2a23455dee596825 # v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            build
+            ci
+            chore
+            revert
