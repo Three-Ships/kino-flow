@@ -2,23 +2,18 @@ name = "kino-flow-gateway"
 main = "src/index.js"
 compatibility_date = "2025-07-01"
 
-# Per-user token store. Create with:
-#   wrangler kv namespace create TOKENS
-# then paste the returned id below (and a preview_id for `wrangler dev`).
-[[kv_namespaces]]
-binding = "TOKENS"
-id = "PASTE_KV_NAMESPACE_ID_HERE"
-# preview_id = "PASTE_PREVIEW_KV_ID_HERE"
-
-# Secrets are NOT stored here — set them encrypted with:
+# No KV / database — the worker just holds the provider keys and proxies.
+#
+# Secrets are NOT stored here. Set them encrypted with:
 #   wrangler secret put ANTHROPIC_API_KEY
 #   wrangler secret put ELEVENLABS_API_KEY
 #   wrangler secret put HEYGEN_API_KEY
 #   wrangler secret put GEMINI_API_KEY
 #   wrangler secret put PIXABAY_API_KEY
 #   wrangler secret put PEXELS_API_KEY
+#   wrangler secret put GATEWAY_TOKEN     # optional shared guard token
 #
-# For a stable public hostname, add a route on your own domain, e.g.:
+# For a stable hostname, add a route on your own domain, e.g.:
 # [[routes]]
 # pattern = "gateway.yourdomain.com/*"
 # zone_name = "yourdomain.com"

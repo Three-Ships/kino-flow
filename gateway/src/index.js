@@ -1,33 +1,37 @@
 /**
  * Kino Flow — shared-key gateway (Cloudflare Worker)
  *
- * Purpose: the distributed desktop app must NEVER hold the shared provider keys.
- * The app authenticates to THIS worker with a per-user token; the worker holds
- * the real keys (as encrypted Worker secrets) and injects them when forwarding
- * upstream. The shared keys never touch a user's machine.
+ * The distributed desktop app must NEVER hold the shared provider keys. The
+ * worker holds them (as encrypted Worker secrets) and injects them when
+ * forwarding upstream. The app talks only to this worker.
  *
- *   Desktop app ──(Bearer <user-token>)──▶ this worker ──(real key)──▶ provider
+ *   Desktop app ──▶ this worker (holds real keys) ──▶ provider
+ *
+ * AUTH: no per-user accounts. A single OPTIONAL shared guard token:
+ *   - If the GATEWAY_TOKEN secret is set, requests must send it as
+ *     `Authorization: Bearer <GATEWAY_TOKEN>` (or x-api-key). This stops the
+ *     worker URL, if leaked, from being an open faucet on your paid keys.
+ *   - If GATEWAY_TOKEN is NOT set, the worker runs OPEN (any caller). Only do
+ *     this if the URL stays private — a leak = uncapped spend on your account.
  *
  * Claude Code integration: set on the spawned `claude` process
- *   ANTHROPIC_BASE_URL = https://<your-worker-host>/anthropic
- *   ANTHROPIC_AUTH_TOKEN = <the user's gateway token>   (or via apiKeyHelper)
- * Claude Code appends /v1/messages, so requests arrive as /anthropic/v1/messages.
+ *   ANTHROPIC_BASE_URL = https://<worker-host>/anthropic
+ *   ANTHROPIC_AUTH_TOKEN = <GATEWAY_TOKEN>   (only if you set the guard)
+ * Claude Code appends /v1/messages → arrives as /anthropic/v1/messages.
  *
  * Secrets (set with `wrangler secret put <NAME>`):
  *   ANTHROPIC_API_KEY, ELEVENLABS_API_KEY, HEYGEN_API_KEY,
  *   GEMINI_API_KEY, PIXABAY_API_KEY, PEXELS_API_KEY
- * Bindings (wrangler.toml): TOKENS (KV) — maps user-token -> user record.
+ *   GATEWAY_TOKEN (optional shared guard token)
  */
 
-// path-prefix -> upstream config. `inject` receives the real key and returns
-// the headers/query to add so the upstream authenticates the request.
+// path-prefix -> upstream config. `inject` adds whatever auth the upstream
+// expects, using the real key held server-side.
 const UPSTREAMS = {
   anthropic: {
     base: "https://api.anthropic.com",
     secret: "ANTHROPIC_API_KEY",
     inject: (key, url, headers) => {
-      // Claude Code sends the gateway token as x-api-key AND Authorization.
-      // Strip both, replace with the real Anthropic key.
       headers.delete("authorization");
       headers.set("x-api-key", key);
       if (!headers.has("anthropic-version")) headers.set("anthropic-version", "2023-06-01");
@@ -51,7 +55,7 @@ const UPSTREAMS = {
   pixabay: {
     base: "https://pixabay.com",
     secret: "PIXABAY_API_KEY",
-    inject: (key, url) => { url.searchParams.set("key", key); }, // Pixabay authenticates via ?key=
+    inject: (key, url) => { url.searchParams.set("key", key); }, // Pixabay: ?key=
   },
   pexels: {
     base: "https://api.pexels.com",
@@ -67,7 +71,7 @@ function json(status, body) {
   });
 }
 
-/** Pull the caller's gateway token from Authorization: Bearer or x-api-key. */
+/** Pull the guard token from Authorization: Bearer or x-api-key. */
 function extractToken(headers) {
   const auth = headers.get("authorization") || "";
   if (auth.toLowerCase().startsWith("bearer ")) return auth.slice(7).trim();
@@ -76,47 +80,11 @@ function extractToken(headers) {
   return null;
 }
 
-/**
- * Validate the per-user token against the TOKENS KV namespace.
- * KV value shape (JSON): { user: "sean@...", disabled?: bool, spendCapUsd?: number }
- * Returns the user record or null. Revoking a user = delete their KV entry.
- */
-async function authenticate(env, token) {
-  if (!token) return null;
-  if (!env.TOKENS) {
-    // Dev fallback ONLY: if no KV bound and DEV_TOKEN is set, accept it.
-    if (env.DEV_TOKEN && token === env.DEV_TOKEN) return { user: "dev", spendCapUsd: 5 };
-    return null;
-  }
-  const raw = await env.TOKENS.get(`tok:${token}`);
-  if (!raw) return null;
-  const rec = JSON.parse(raw);
-  if (rec.disabled) return null;
-  return rec;
-}
-
-/**
- * Coarse usage log + soft spend guard. NOTE: KV is eventually-consistent and
- * these increments are NOT atomic — good enough for logging and a soft cap, but
- * for a HARD per-user spend cap use Durable Objects or D1 (see README).
- */
-async function checkAndLogUsage(env, rec, service) {
-  if (!env.TOKENS || !rec || !rec.user) return { ok: true };
-  const monthKey = `use:${rec.user}`; // production: bucket by YYYY-MM
-  const raw = await env.TOKENS.get(monthKey);
-  const usage = raw ? JSON.parse(raw) : { requests: 0, byService: {} };
-  usage.requests += 1;
-  usage.byService[service] = (usage.byService[service] || 0) + 1;
-  // Fire-and-forget write; do not block the proxied request on it.
-  await env.TOKENS.put(monthKey, JSON.stringify(usage));
-  return { ok: true };
-}
-
 export default {
-  async fetch(request, env, ctx) {
+  async fetch(request, env) {
     const url = new URL(request.url);
 
-    // CORS preflight (desktop app / localhost origins).
+    // CORS preflight.
     if (request.method === "OPTIONS") {
       return new Response(null, {
         headers: {
@@ -127,9 +95,14 @@ export default {
       });
     }
 
-    // Health check.
+    // Health check (never echoes secrets).
     if (url.pathname === "/" || url.pathname === "/health") {
-      return json(200, { ok: true, service: "kino-flow-gateway", upstreams: Object.keys(UPSTREAMS) });
+      return json(200, {
+        ok: true,
+        service: "kino-flow-gateway",
+        upstreams: Object.keys(UPSTREAMS),
+        guard: env.GATEWAY_TOKEN ? "token-required" : "OPEN (no guard token set)",
+      });
     }
 
     // /<service>/<rest...>
@@ -138,10 +111,11 @@ export default {
     const cfg = UPSTREAMS[service];
     if (!cfg) return json(404, { error: `unknown service '${service}'`, known: Object.keys(UPSTREAMS) });
 
-    // AuthN: validate the per-user gateway token BEFORE touching any real key.
-    const token = extractToken(request.headers);
-    const rec = await authenticate(env, token);
-    if (!rec) return json(401, { error: "invalid or missing gateway token" });
+    // Optional shared-token guard (checked before touching any real key).
+    if (env.GATEWAY_TOKEN) {
+      const token = extractToken(request.headers);
+      if (token !== env.GATEWAY_TOKEN) return json(401, { error: "invalid or missing gateway token" });
+    }
 
     const realKey = env[cfg.secret];
     if (!realKey) return json(500, { error: `gateway misconfigured: secret ${cfg.secret} not set` });
@@ -153,13 +127,11 @@ export default {
 
     const headers = new Headers(request.headers);
     headers.delete("host");
-    headers.delete("x-api-key"); // remove the caller's gateway token
+    headers.delete("x-api-key"); // drop the caller's guard token before forwarding
     cfg.inject(realKey, upstreamUrl, headers);
 
-    await checkAndLogUsage(env, rec, service);
-
-    // Forward (streaming pass-through: returning the upstream Response streams
-    // the body straight back to the client — this is why a Worker fits here).
+    // Forward (streaming pass-through: returning the upstream body streams it
+    // straight back — this is why a Worker fits long Claude turns).
     const upstreamReq = new Request(upstreamUrl.toString(), {
       method: request.method,
       headers,

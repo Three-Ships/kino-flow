@@ -7,5 +7,6 @@ GEMINI_API_KEY=
 PIXABAY_API_KEY=
 PEXELS_API_KEY=
 
-# Dev-only bypass token (accepted when no TOKENS KV is bound). Do NOT set in prod.
-DEV_TOKEN=
+# Optional shared guard token. If set, callers must send it as
+# `Authorization: Bearer <token>`. Leave blank to run the worker open.
+GATEWAY_TOKEN=
