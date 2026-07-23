@@ -23,6 +23,16 @@
         if(!full) document.documentElement.classList.add('simple-mode');
       }catch(e){ document.documentElement.classList.add('simple-mode'); }
     })();
+    // Seed the shared Google Drive asset root (detected server-side) so every
+    // machine points at the same central assets regardless of drive letter/OS.
+    (async function(){
+      try{
+        var r = await fetch('/api/asset-root');
+        if(!r.ok) return;
+        var d = await r.json();
+        if(d && d.root) localStorage.setItem('veditor.diceRoot.v1', d.root);
+      }catch(e){ /* Drive not mounted / server old — leave existing value */ }
+    })();
   </script>
 </head>
 <body>

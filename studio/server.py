@@ -71,6 +71,51 @@ def _claude_env() -> dict:
             env["ANTHROPIC_AUTH_TOKEN"] = KINO_GATEWAY_TOKEN
     return env
 
+
+# ── Shared asset root on Google Drive ────────────────────────────────
+# Team assets (per-team B-Roll/HOOKS/CTAs/Music/Guidelines) live in a shared
+# Google Drive folder that Google Drive for Desktop mounts locally. The path
+# INSIDE Drive is identical on every machine — only the mount root differs
+# (drive letter on Windows; ~/Library/CloudStorage on macOS). We detect the
+# mount so every install points at the same central assets with no per-machine
+# config. Override with KINO_ASSET_ROOT to force an explicit path.
+ASSET_REL_PARTS = ("Shared drives", "Home Solutions Team Drive", "Social",
+                   "19 - Creative Assets", "Kino Flow - Asset Folder")
+_asset_root_cache: "str | None" = None
+
+
+def detect_asset_root() -> str:
+    """Locate the shared Kino asset folder on the local Google Drive mount.
+    Returns "" if Drive isn't mounted / the folder isn't found. Caches only a
+    successful hit, so a Drive mounted after startup is still picked up."""
+    global _asset_root_cache
+    override = os.environ.get("KINO_ASSET_ROOT", "").strip()
+    if override:
+        return override
+    if _asset_root_cache:
+        return _asset_root_cache
+    rel = Path(*ASSET_REL_PARTS)
+    candidates: list[Path] = []
+    if os.name == "nt":
+        import string
+        for letter in string.ascii_uppercase:
+            candidates.append(Path(f"{letter}:\\") / rel)
+    else:
+        home = Path.home()
+        candidates += [b / rel for b in sorted(home.glob("Library/CloudStorage/GoogleDrive-*"))]
+        candidates.append(Path("/Volumes/GoogleDrive") / rel)
+        vol = Path("/Volumes")
+        if vol.exists():
+            candidates += [b / rel for b in sorted(vol.glob("GoogleDrive-*"))]
+    for c in candidates:
+        try:
+            if c.is_dir():
+                _asset_root_cache = str(c)
+                return _asset_root_cache
+        except OSError:
+            continue
+    return ""
+
 # ── Model routing (cost-optimization Workstream A1) ──────────────────
 # Job type → Claude model, so copywriting/deterministic-render jobs run on
 # Sonnet/Haiku and only genuine multi-step reasoning gets Opus. Config in
@@ -755,7 +800,17 @@ async def health():
         # Gateway routing status (never echo the token itself).
         "gateway_enabled": bool(KINO_GATEWAY_URL and KINO_GATEWAY_TOKEN),
         "gateway_url": KINO_GATEWAY_URL or None,
+        "asset_root": detect_asset_root() or None,
     }
+
+
+@app.get("/api/asset-root")
+async def asset_root():
+    """Shared Google Drive asset root, detected for this machine. The client
+    seeds it into localStorage so Variants/Streamlined find the central assets
+    regardless of drive letter or OS."""
+    root = detect_asset_root()
+    return {"root": root or None, "found": bool(root)}
 
 
 # ============================================================================
