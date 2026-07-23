@@ -62,11 +62,13 @@ def _claude_env() -> dict:
     shared-key gateway when configured, else returns the ambient environment
     unchanged (local claude auth)."""
     env = os.environ.copy()
-    if KINO_GATEWAY_URL and KINO_GATEWAY_TOKEN:
+    if KINO_GATEWAY_URL:
         env["ANTHROPIC_BASE_URL"] = f"{KINO_GATEWAY_URL}/anthropic"
-        env["ANTHROPIC_AUTH_TOKEN"] = KINO_GATEWAY_TOKEN
-        # A stray local key would shadow the gateway token — remove it.
+        # A stray local key would shadow the gateway routing — remove it.
         env.pop("ANTHROPIC_API_KEY", None)
+        # Send the guard token when the gateway requires one (recommended).
+        if KINO_GATEWAY_TOKEN:
+            env["ANTHROPIC_AUTH_TOKEN"] = KINO_GATEWAY_TOKEN
     return env
 
 # ── Model routing (cost-optimization Workstream A1) ──────────────────
