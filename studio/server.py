@@ -46,6 +46,29 @@ def _render_semaphore() -> "asyncio.Semaphore":
 
 CLAUDE_BIN = os.environ.get("CLAUDE_BIN") or shutil.which("claude") or r"C:\Users\seanh\AppData\Roaming\npm\claude.cmd"
 
+# ── Shared-key gateway (production distribution) ─────────────────────
+# In the distributed desktop app the user's machine must NOT hold the real
+# Anthropic key. When KINO_GATEWAY_URL is set, route the spawned `claude`
+# process through the Cloudflare Worker gateway (see gateway/): the worker holds
+# the real key and the app sends only a per-user token. Unset (the default and
+# the current local dev setup) → inherit the ambient env / local claude login
+# exactly as before, so this change is a no-op until the gateway is deployed.
+KINO_GATEWAY_URL = os.environ.get("KINO_GATEWAY_URL", "").rstrip("/")
+KINO_GATEWAY_TOKEN = os.environ.get("KINO_GATEWAY_TOKEN", "")
+
+
+def _claude_env() -> dict:
+    """Environment for the spawned claude CLI. Routes Claude through the
+    shared-key gateway when configured, else returns the ambient environment
+    unchanged (local claude auth)."""
+    env = os.environ.copy()
+    if KINO_GATEWAY_URL and KINO_GATEWAY_TOKEN:
+        env["ANTHROPIC_BASE_URL"] = f"{KINO_GATEWAY_URL}/anthropic"
+        env["ANTHROPIC_AUTH_TOKEN"] = KINO_GATEWAY_TOKEN
+        # A stray local key would shadow the gateway token — remove it.
+        env.pop("ANTHROPIC_API_KEY", None)
+    return env
+
 # ── Model routing (cost-optimization Workstream A1) ──────────────────
 # Job type → Claude model, so copywriting/deterministic-render jobs run on
 # Sonnet/Haiku and only genuine multi-step reasoning gets Opus. Config in
@@ -238,6 +261,7 @@ async def chat(
     proc = await asyncio.create_subprocess_exec(
         *args,
         cwd=str(PROJECT_ROOT),
+        env=_claude_env(),  # routes through the shared-key gateway when configured
         stdin=asyncio.subprocess.PIPE,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
@@ -726,6 +750,9 @@ async def health():
         "project_root": str(PROJECT_ROOT),
         "claude_bin": CLAUDE_BIN,
         "claude_found": bool(CLAUDE_BIN and Path(CLAUDE_BIN).exists()),
+        # Gateway routing status (never echo the token itself).
+        "gateway_enabled": bool(KINO_GATEWAY_URL and KINO_GATEWAY_TOKEN),
+        "gateway_url": KINO_GATEWAY_URL or None,
     }
 
 
