@@ -43,6 +43,10 @@
   const genBtn = $id('sa-generate');
   const logoSel = $id('sa-logo');
   const brandOn = $id('sa-brand-on');
+  const numBrollEl = $id('sa-num-broll');
+  const ctaOn = $id('sa-cta-on');
+  const ctaBg = $id('sa-cta-bg');
+  const ctaFg = $id('sa-cta-fg');
   const brandPrimary = $id('sa-brand-primary');
   const brandAccent = $id('sa-brand-accent');
   const brandSave = $id('sa-brand-save');
@@ -182,6 +186,9 @@
     brandAccent.disabled = !on;
   }
   brandOn.addEventListener('change', () => setBrandEnabled(brandOn.checked));
+  if (ctaOn) ctaOn.addEventListener('change', () => {
+    ctaBg.disabled = ctaFg.disabled = !ctaOn.checked;
+  });
 
   async function loadBrand() {
     brandFolder = await currentTeamFolder();
@@ -294,6 +301,9 @@
           logo: logoSel.value || null,
           brand_primary: brandOn.checked ? brandPrimary.value : null,
           brand_accent: brandOn.checked ? brandAccent.value : null,
+          cta_bg: (ctaOn && ctaOn.checked) ? ctaBg.value : null,
+          cta_fg: (ctaOn && ctaOn.checked) ? ctaFg.value : null,
+          num_broll: Math.max(1, parseInt((numBrollEl && numBrollEl.value) || '1', 10) || 1),
           job_id: jobId,
         };
         try {
@@ -330,6 +340,10 @@
     const brandArgs = (brandOn.checked
       ? ` --brand-primary "${brandPrimary.value}" --brand-accent "${brandAccent.value}"` : '')
       + (logoSel.value ? ` --logo "${logoSel.value}"` : '');
+    const ctaArgs = (ctaOn && ctaOn.checked)
+      ? ` --cta-bg "${ctaBg.value}" --cta-fg "${ctaFg.value}"` : '';
+    const nBroll = Math.max(1, parseInt((numBrollEl && numBrollEl.value) || '1', 10) || 1);
+    const shotArgs = nBroll > 1 ? ` --num-broll ${nBroll}` : '';
 
     // which pieces Kino authors vs. which the user locked in
     const wHook = !!(kinoHook && kinoHook.checked);
@@ -375,7 +389,7 @@ Parse its JSON for the piece(s) you need${wHook ? ' (hook)' : ''}${wBullets ? ' 
 
 ${locked.length ? `Use these EXACTLY as given (do not change them):\n${locked.map((l) => '- ' + l).join('\n')}\n` : ''}
 STEP ${toWrite.length ? '3' : '2'} — render each ad by running (fill only the <placeholders> you wrote; everything else is already inlined). Background rule: FINISHED footage only — prefer "<team>/B-Roll/Final/"; never Install/. Heal drive letters if a path 404s (assets moved D:→E:).
-PYTHONUTF8=1 $VU_PY video-use/helpers/streamlined_ad.py --format ${format} --background "${bgEl.value.trim() || '<team B-Roll/Final folder>'}" --hook "${hookArg}"${bulletArg} --cta "${ctaArg}"${discArg}${voiceArg ? ` --voice-id ${voiceArg}` : ''}${musicEl.value.trim() ? ` --music "${musicEl.value.trim()}"` : ''}${brandArgs} --duration ${parseFloat(durEl.value) || 15} --output "videos/edit/streamlined_<timestamp>/ad_<n>.mp4" --json
+PYTHONUTF8=1 $VU_PY video-use/helpers/streamlined_ad.py --format ${format} --background "${bgEl.value.trim() || '<team B-Roll/Final folder>'}" --hook "${hookArg}"${bulletArg} --cta "${ctaArg}"${discArg}${voiceArg ? ` --voice-id ${voiceArg}` : ''}${musicEl.value.trim() ? ` --music "${musicEl.value.trim()}"` : ''}${brandArgs}${ctaArgs}${shotArgs} --duration ${parseFloat(durEl.value) || 15} --output "videos/edit/streamlined_<timestamp>/ad_<n>.mp4" --json
 
 STEP ${toWrite.length ? '4' : '3'} — deliver: copy each finished mp4 to "Final Output/<the ad's hook text, sanitized>/ad_<n>.mp4" (create the folder). The edit run stays in videos/edit/ for the timeline.
 

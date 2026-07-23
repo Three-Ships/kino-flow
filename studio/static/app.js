@@ -5070,6 +5070,8 @@ Rewrite every line that fails until the whole script passes. Print the FINAL rev
   "hook_font": "<one preset font, MUST differ from the caption font '${font}'; may match cta_font>",
   "cta_text": "<on-screen CTA: a REAL OFFER from the brand guidelines, 4-8 words>",
   "cta_font": "<one preset font, MUST differ from the caption font '${font}'>",
+  "cta_bg": "${cap.bg}",
+  "cta_fg": "${cap.fg}",
   "cta_mode": "<'full' or 'last30' — pick per variant>",
   "disclaimer_text": "<REQUIRED legal fine-print for this variant per the LEGAL DISCLAIMERS rules — combine applicable ones with '  ·  '. OMIT this field entirely if no rule triggers.>"
 }

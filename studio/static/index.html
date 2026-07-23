@@ -1396,6 +1396,11 @@
             <input type="text" id="sa-background" placeholder="auto: <team>/B-Roll" spellcheck="false" />
           </label>
           <button type="button" class="fpick-btn" data-target="sa-background">Browse</button>
+          <label class="dice-field" style="max-width:120px">
+            <span>B-roll shots <span class="opt">folder</span></span>
+            <input type="number" id="sa-num-broll" min="1" max="12" step="1" value="1"
+                   title="How many distinct clips to sequence from the background folder (1 = single clip)" />
+          </label>
         </div>
 
         <div class="dice-row">
@@ -1419,6 +1424,13 @@
               <input type="color" id="sa-brand-primary" value="#0b4f9e" title="primary — CTA box / big hook box" disabled />
               <input type="color" id="sa-brand-accent" value="#ffffff" title="accent — bullet chips" disabled />
               <button type="button" id="sa-brand-save" class="ghost-mini" title="save logo + colors as this team's default (writes Guidelines/brand.json)">save as team default</button>
+            </span>
+          </label>
+          <label class="dice-field sa-brand-colors">
+            <span><label class="sa-brand-toggle"><input type="checkbox" id="sa-cta-on" /> CTA style</label></span>
+            <span class="sa-swatch-row">
+              <input type="color" id="sa-cta-bg" value="#0b4f9e" title="CTA box color" disabled />
+              <input type="color" id="sa-cta-fg" value="#ffffff" title="CTA text color" disabled />
             </span>
           </label>
         </div>
