@@ -55,3 +55,7 @@ desktop.ini
 
 # color-quiz (removed from repo, kept locally)
 color-quiz/
+
+# ─── Cloudflare Worker gateway ────────────────────────────
+.dev.vars
+.wrangler/

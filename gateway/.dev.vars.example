@@ -1,0 +1,11 @@
+# Local-only secrets for `wrangler dev`. Copy to `.dev.vars` (gitignored) and fill in.
+# In production these are set with `wrangler secret put <NAME>` instead — never committed.
+ANTHROPIC_API_KEY=
+ELEVENLABS_API_KEY=
+HEYGEN_API_KEY=
+GEMINI_API_KEY=
+PIXABAY_API_KEY=
+PEXELS_API_KEY=
+
+# Dev-only bypass token (accepted when no TOKENS KV is bound). Do NOT set in prod.
+DEV_TOKEN=
