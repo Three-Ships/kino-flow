@@ -6196,21 +6196,37 @@ window.kfNewJobId = function(prefix) {
   return (prefix || 'job') + '_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
 };
 window.kfTrackProgress = function(jobId, els) {
-  let stopped = false;
+  els = els || {};
+  let stopped = false, dinged = false;
   const fmtEta = (s) => s >= 60 ? `${Math.floor(s / 60)}m ${s % 60}s` : `${s}s`;
-  if (els.container) els.container.hidden = false;
-  if (els.fill) els.fill.style.width = '0%';
+  // Always also drive the always-visible global bar below the chat box, so
+  // progress is seen on the main screen even if a modal that opened it closes.
+  const g = {
+    container: document.getElementById('kf-global-prog'),
+    fill: document.getElementById('kf-gp-fill'),
+    label: document.getElementById('kf-gp-label'),
+  };
+  const targets = [els, g];
+  targets.forEach((o) => { if (o.container) o.container.hidden = false; if (o.fill) o.fill.style.width = '0%'; });
   async function tick() {
     if (stopped) return;
     try {
       const r = await fetch('/api/progress?job=' + encodeURIComponent(jobId));
       const d = await r.json();
       if (d.found) {
-        if (els.fill) els.fill.style.width = d.percent + '%';
-        if (els.label) els.label.textContent = d.done
-          ? '✓ complete'
-          : `${d.percent}% · ${d.phase} · ~${fmtEta(d.eta_s)} left`;
-        if (d.done) { stopped = true; return; }
+        const w = d.percent + '%';
+        const lbl = d.done ? '✓ complete' : `${d.percent}% · ${d.phase} · ~${fmtEta(d.eta_s)} left`;
+        targets.forEach((o) => {
+          if (o.fill) o.fill.style.width = w;
+          if (o.label) o.label.textContent = lbl;
+        });
+        if (d.done) {
+          stopped = true;
+          if (!dinged && typeof playDing === 'function') { dinged = true; playDing(); }
+          // leave the global bar showing "✓ complete" briefly, then hide it
+          setTimeout(() => { if (g.container) g.container.hidden = true; }, 4000);
+          return;
+        }
       }
     } catch { /* transient — keep polling */ }
     if (!stopped) setTimeout(tick, 700);
@@ -6218,7 +6234,6 @@ window.kfTrackProgress = function(jobId, els) {
   tick();
   return function stop() {
     stopped = true;
-    if (els.container) els.container.hidden = true;
-    if (els.fill) els.fill.style.width = '0%';
+    targets.forEach((o) => { if (o.container) o.container.hidden = true; if (o.fill) o.fill.style.width = '0%'; });
   };
 };

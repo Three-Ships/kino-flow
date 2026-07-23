@@ -236,6 +236,14 @@
               <span class="status-elapsed" id="status-elapsed">0.0s</span>
             </div>
 
+            <!-- Always-visible render progress (any flow drives it via
+                 kfTrackProgress) so it's seen on the main screen, not in a
+                 modal that may close. -->
+            <div class="kf-prog" id="kf-global-prog" hidden>
+              <div class="kf-prog-track"><div class="kf-prog-fill" id="kf-gp-fill"></div></div>
+              <span class="kf-prog-label" id="kf-gp-label"></span>
+            </div>
+
             <div class="composer">
               <div class="composer-header">
                 <span class="st-title">pipeline</span>

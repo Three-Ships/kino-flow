@@ -369,13 +369,13 @@ Create ${count} "${format}" streamlined ad(s) for team ${teamName}.
 ${toWrite.length ? `STEP 1 — generate the copy with the LOCAL copy model (free, $0 tokens) — do NOT write it yourself. Run copy_gen.py, which reads the brand guidelines under "${root}/${teamName}/Brand Guidelines/" and returns JSON. Write ONLY these piece(s)${count > 1 ? ', a DIFFERENT angle per ad' : ''}:
 ${toWrite.map((t) => '- ' + t).join('\n')}
 Run (once per ad; pick a distinct --angle per ad, e.g. problem-first / social-proof / benefit-first):
-PYTHONUTF8=1 video-use/.venv/Scripts/python.exe video-use/helpers/copy_gen.py --format ${format === 'bullets' ? 'bullets' : 'vo'} --brand "${root}/${teamName}/Brand Guidelines/<the guidelines file>" --angle <angle>${wHook ? '' : ` --hook "${userHook}"`}${wCta ? '' : ` --cta "${userCta}"`} --json
+PYTHONUTF8=1 $VU_PY video-use/helpers/copy_gen.py --format ${format === 'bullets' ? 'bullets' : 'vo'} --brand "${root}/${teamName}/Brand Guidelines/<the guidelines file>" --angle <angle>${wHook ? '' : ` --hook "${userHook}"`}${wCta ? '' : ` --cta "${userCta}"`} --json
 Parse its JSON for the piece(s) you need${wHook ? ' (hook)' : ''}${wBullets ? ' (bullets)' : ''}${wCta ? ' (cta)' : ''}. If Ollama is unreachable, fall back to writing them yourself, brand-compliant. Print the final copy.`
   : 'STEP 1 — all copy is user-provided below; no writing needed.'}
 
 ${locked.length ? `Use these EXACTLY as given (do not change them):\n${locked.map((l) => '- ' + l).join('\n')}\n` : ''}
 STEP ${toWrite.length ? '3' : '2'} — render each ad by running (fill only the <placeholders> you wrote; everything else is already inlined). Background rule: FINISHED footage only — prefer "<team>/B-Roll/Final/"; never Install/. Heal drive letters if a path 404s (assets moved D:→E:).
-PYTHONUTF8=1 video-use/.venv/Scripts/python.exe video-use/helpers/streamlined_ad.py --format ${format} --background "${bgEl.value.trim() || '<team B-Roll/Final folder>'}" --hook "${hookArg}"${bulletArg} --cta "${ctaArg}"${discArg}${voiceArg ? ` --voice-id ${voiceArg}` : ''}${musicEl.value.trim() ? ` --music "${musicEl.value.trim()}"` : ''}${brandArgs} --duration ${parseFloat(durEl.value) || 15} --output "videos/edit/streamlined_<timestamp>/ad_<n>.mp4" --json
+PYTHONUTF8=1 $VU_PY video-use/helpers/streamlined_ad.py --format ${format} --background "${bgEl.value.trim() || '<team B-Roll/Final folder>'}" --hook "${hookArg}"${bulletArg} --cta "${ctaArg}"${discArg}${voiceArg ? ` --voice-id ${voiceArg}` : ''}${musicEl.value.trim() ? ` --music "${musicEl.value.trim()}"` : ''}${brandArgs} --duration ${parseFloat(durEl.value) || 15} --output "videos/edit/streamlined_<timestamp>/ad_<n>.mp4" --json
 
 STEP ${toWrite.length ? '4' : '3'} — deliver: copy each finished mp4 to "Final Output/<the ad's hook text, sanitized>/ad_<n>.mp4" (create the folder). The edit run stays in videos/edit/ for the timeline.
 
