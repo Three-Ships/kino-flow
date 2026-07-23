@@ -1,0 +1,5 @@
+# Shell scripts must be LF (they break on macOS/Linux with CRLF).
+*.sh text eol=lf
+# Windows batch/cmd stay CRLF.
+*.cmd text eol=crlf
+*.bat text eol=crlf
