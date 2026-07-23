@@ -62,8 +62,10 @@ color-quiz/
 
 # ─── Installer (secrets + build outputs never committed) ──
 installer/config.local.json
-installer/kino.config.json
+installer/**/kino.config.json
 installer/**/dist/
 installer/**/output/
 installer/**/*.exe
 installer/**/*.dmg
+installer/windows/ffmpeg/
+installer/windows/kino.ico
