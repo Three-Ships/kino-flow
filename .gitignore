@@ -52,3 +52,6 @@ Thumbs.db
 desktop.ini
 .vscode/
 .idea/
+
+# color-quiz (removed from repo, kept locally)
+color-quiz/
