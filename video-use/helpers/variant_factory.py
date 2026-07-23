@@ -847,6 +847,7 @@ def step_burn_captions(
     hook_text: str | None = None, frame_height: int = 1920,
     frame_width: int = 1080, hook_font: str | None = None,
     cta_text: str | None = None, cta_font: str | None = None,
+    cta_bg: str | None = None, cta_fg: str | None = None,
     cta_mode: str = "full", video_duration: float = 0.0,
     disclaimer_text: str | None = None,
 ) -> None:
@@ -936,7 +937,9 @@ def step_burn_captions(
         cta_start = 0.0 if (cta_mode or "full") == "full" else round(dur * 0.70, 2)
         (cwd / "cta.ass").write_bytes(
             _overlay_ass("CTA", cta_font or "Arial Black", cta_size, cta_top,
-                         cta_start, dur, cta_lines).encode("utf-8"))
+                         cta_start, dur, cta_lines,
+                         primary=_hex_to_ass_bgr(cta_fg) if cta_fg else "&H00FFFFFF",
+                         box=_hex_to_ass_bgr(cta_bg) if cta_bg else "&H00000000").encode("utf-8"))
         vf = f"{vf},subtitles=cta.ass"
 
     if disclaimer_text and disclaimer_text.strip():
@@ -1085,6 +1088,8 @@ def run(args: argparse.Namespace) -> dict:
         hook_font=getattr(args, "hook_font", None),
         cta_text=getattr(args, "cta_text", None),
         cta_font=getattr(args, "cta_font", None),
+        cta_bg=getattr(args, "cta_bg", None),
+        cta_fg=getattr(args, "cta_fg", None),
         cta_mode=getattr(args, "cta_mode", "full"),
         video_duration=vo_duration,
         disclaimer_text=getattr(args, "disclaimer_text", None),
@@ -1243,6 +1248,10 @@ def main() -> None:
     ap.add_argument("--cta-font", default="Arial Black",
                     help="Font family for the CTA overlay (should differ from "
                          "the caption font). Default: Arial Black.")
+    ap.add_argument("--cta-bg", default=None,
+                    help="CTA box color #RRGGBB (default black).")
+    ap.add_argument("--cta-fg", default=None,
+                    help="CTA text color #RRGGBB (default white).")
     ap.add_argument("--cta-mode", choices=("full", "last30"), default="full",
                     help="CTA visibility: 'full' = entire video, "
                          "'last30' = final 30%% of the video only.")

@@ -1982,12 +1982,20 @@ async def streamlined_ad(payload: dict):
     if payload.get("logo"):
         cmd += ["--logo", str(heal_drive_letter(payload["logo"]))]
     for key, flag in (("brand_primary", "--brand-primary"),
-                      ("brand_accent", "--brand-accent")):
+                      ("brand_accent", "--brand-accent"),
+                      ("cta_bg", "--cta-bg"), ("cta_fg", "--cta-fg")):
         val = (payload.get(key) or "").strip()
         if val:
             if not re.fullmatch(r"#?[0-9a-fA-F]{6}", val):
                 raise HTTPException(400, f"{key} must be #RRGGBB")
             cmd += [flag, val]
+    if payload.get("num_broll"):
+        try:
+            n = max(1, int(payload["num_broll"]))
+        except (ValueError, TypeError):
+            n = 1
+        if n > 1:
+            cmd += ["--num-broll", str(n)]
     if payload.get("seed") is not None:
         cmd += ["--seed", str(int(payload["seed"]))]
 
@@ -2853,8 +2861,8 @@ async def variant_factory(payload: dict):
                          "talking_head_threshold", "match_min_score"]
     passthrough_str = ["fps", "caption_font", "caption_bg", "caption_fg",
                        "tts_model", "caption_case", "hook_text", "hook_font",
-                       "cta_text", "cta_font", "cta_mode", "disclaimer_text",
-                       "match", "broll_fallback"]
+                       "cta_text", "cta_font", "cta_bg", "cta_fg", "cta_mode",
+                       "disclaimer_text", "match", "broll_fallback"]
     flag_map_int = {
         "width": "--width", "height": "--height", "seed": "--seed",
         "caption_size": "--caption-size",
@@ -2879,6 +2887,7 @@ async def variant_factory(payload: dict):
         "tts_model": "--tts-model", "caption_case": "--caption-case",
         "hook_text": "--hook-text", "hook_font": "--hook-font",
         "cta_text": "--cta-text", "cta_font": "--cta-font",
+        "cta_bg": "--cta-bg", "cta_fg": "--cta-fg",
         "cta_mode": "--cta-mode",
         "disclaimer_text": "--disclaimer-text",
         "match": "--match", "broll_fallback": "--broll-fallback",

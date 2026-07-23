@@ -97,6 +97,36 @@ def pick_media(path: Path, exts: set[str], label: str) -> Path:
     raise SystemExit  # unreachable
 
 
+def build_multishot_bg(folder: Path, n: int, seg: float, w: int, h: int,
+                       fps: int, out_path: Path) -> Path:
+    """Sample up to n distinct video clips from `folder`, normalize each to
+    w×h and trim to `seg` seconds, then concat them into one background clip.
+    The caller's -stream_loop fills any remaining time, so the total need not
+    be exact. Returns out_path."""
+    pool = [f for f in folder.rglob("*")
+            if f.is_file() and f.suffix.lower() in VIDEO_EXTS
+            and not f.name.startswith("._")]
+    if not pool:
+        die(f"no video files found under {folder}")
+    k = min(n, len(pool))
+    clips = random.sample(pool, k)
+    inputs: list[str] = []
+    for c in clips:
+        inputs += ["-i", str(c)]
+    parts, labels = [], ""
+    for i in range(k):
+        parts.append(
+            f"[{i}:v]scale={w}:{h}:force_original_aspect_ratio=increase,"
+            f"crop={w}:{h},setsar=1,fps={fps},trim=duration={seg:.3f},"
+            f"setpts=PTS-STARTPTS[v{i}]")
+        labels += f"[v{i}]"
+    fc = ";".join(parts) + f";{labels}concat=n={k}:v=1:a=0[out]"
+    run_ffmpeg(["ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+                *inputs, "-filter_complex", fc, "-map", "[out]", "-an",
+                str(out_path)])
+    return out_path
+
+
 def ass_ts(t: float) -> str:
     cs = int(round(t * 100))
     h, rem = divmod(cs, 360_000)
@@ -171,6 +201,7 @@ def build_ass(fmt: str, w: int, h: int, total: float, hook: str, bullets: list[s
               cta: str, out: Path, hook_end: float | None, cta_start: float,
               brand_primary: str | None = None,
               brand_accent: str | None = None,
+              cta_bg: str | None = None, cta_fg: str | None = None,
               disclaimer: str = "") -> None:
     # brand colors: primary tints the CTA box + big-hook box, accent tints the
     # bullet chips; text flips black/white by luminance. No flags = house look.
@@ -190,8 +221,8 @@ def build_ass(fmt: str, w: int, h: int, total: float, hook: str, bullets: list[s
         bighook_text=text_on(brand_primary) if brand_primary else "&H00111111",
         bullet_box=ass_color(brand_accent) if brand_accent else "&H00FFFFFF",
         bullet_text=text_on(brand_accent) if brand_accent else "&H00111111",
-        cta_box=ass_color(brand_primary) if brand_primary else "&H00000000",
-        cta_text=text_on(brand_primary) if brand_primary else "&H00FFFFFF",
+        cta_box=ass_color(cta_bg) if cta_bg else (ass_color(brand_primary) if brand_primary else "&H00000000"),
+        cta_text=ass_color(cta_fg) if cta_fg else (text_on(brand_primary) if brand_primary else "&H00FFFFFF"),
     )
     ev: list[str] = []
 
@@ -254,6 +285,13 @@ def main() -> None:
                     help="#RRGGBB — tints the CTA box and text-vo hook box")
     ap.add_argument("--brand-accent", default=None,
                     help="#RRGGBB — tints the bullet chips")
+    ap.add_argument("--cta-bg", default=None,
+                    help="#RRGGBB — CTA box color (overrides the brand-primary tint)")
+    ap.add_argument("--cta-fg", default=None,
+                    help="#RRGGBB — CTA text color")
+    ap.add_argument("--num-broll", type=int, default=1,
+                    help="when --background is a folder, sequence this many "
+                         "distinct clips as the background (default 1)")
     ap.add_argument("--disclaimer", default="",
                     help="fine-print disclaimer — 18pt white, centered at the "
                          "bottom of the frame, on screen the whole ad")
@@ -310,7 +348,17 @@ def main() -> None:
     ass_path = out_dir / f"{stem}.ass"
     build_ass(args.format, args.width, args.height, total, args.hook,
               args.bullets, args.cta, ass_path, hook_end, cta_start,
-              args.brand_primary, args.brand_accent, args.disclaimer)
+              args.brand_primary, args.brand_accent,
+              args.cta_bg, args.cta_fg, args.disclaimer)
+
+    # ── multi-shot background (optional): sequence N distinct clips ──
+    if getattr(args, "num_broll", 1) > 1 and args.background.is_dir() and not bg_is_image:
+        seg = total / args.num_broll
+        background = build_multishot_bg(
+            args.background, args.num_broll, seg,
+            args.width, args.height, args.fps,
+            out_dir / f"{stem}_multishot_bg.mp4")
+        bg_is_image = False
 
     # ── assemble the ffmpeg graph ──
     cmd: list[str] = ["ffmpeg", "-y", "-hide_banner"]
