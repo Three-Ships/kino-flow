@@ -4907,7 +4907,7 @@ Confirm the final output path (\`${outFile}\`), duration, and file size.`;
         } else if (!teamFolder || norm(teamFolder) === norm(root)) {
           why = `Couldn't find the "${teamId}" folder inside:\n${root}\n\nMake sure that team's subfolder exists there.`;
         } else {
-          why = `Found the team folder:\n${teamFolder}\n\n...but no "Brand Guidelines" folder inside it. Add one (with a .txt/.md/.pdf/.docx doc), or type a seed script above.`;
+          why = `Found the team folder:\n${teamFolder}\n\n...but no "Brand Guidelines" folder inside it. Add one (with a short .txt or .md brand summary), or type a seed script above.`;
         }
         alert('No-script mode needs a Brand Guidelines folder.\n\n' + why + '\n\n(Or just type a seed script above to skip auto mode.)');
         return;
@@ -4921,7 +4921,7 @@ Confirm the final output path (\`${outFile}\`), duration, and file size.`;
         }
       } catch (e) { /* treat as missing below */ }
       if (!bgDocs.length) {
-        alert(`No-script mode requires a Brand Guidelines document, but none was found in:\n\n${brandGuidelinesPath}\n\nDrop a .txt/.md/.pdf/.docx brand guideline in that folder, or type a seed script above.`);
+        alert(`No-script mode requires a Brand Guidelines document, but none was found in:\n\n${brandGuidelinesPath}\n\nDrop a short .txt or .md brand summary in that folder (avoid PDF/DOCX — they overflow context and crash the run), or type a seed script above.`);
         return;
       }
     }
@@ -4981,14 +4981,14 @@ ${autoScript
 ${autoScript
   ? `**MANDATORY — this run has NO seed script, so the brand folder IS your source of truth. Read it in TWO passes before writing anything:**
 
-PASS 1 — BRAND RULES: Read the brand-guidelines doc(s) (the .pdf/.docx brand book) in \`${brandGuidelinesPath}\`. Extract and internalize: product/service, key offers/promotions, value propositions, target audience, approved claims, required terminology, tone of voice, off-limits topics.
+PASS 1 — BRAND RULES: Read ONLY plain-text brand notes (.txt/.md) in \`${brandGuidelinesPath}\`, and read at most ~12,000 characters total. Do NOT open .pdf, .docx, image, or video files — they overflow your context and crash the run. If the brand rules exist ONLY as a PDF/DOCX, STOP and tell the user to add a short .txt or .md brand summary to that folder. From the text you read, extract and internalize: product/service, key offers/promotions, value propositions, target audience, approved claims, required terminology, tone of voice, off-limits topics.
 
-PASS 2 — WINNING SCRIPTS: The folder also contains WINNING SCRIPTS the user has added (proven high-performing ad copy — likely .txt/.md/.docx files). Read EVERY one of them. STUDY them as your model: how they open (hook style), how they build (problem → solution → proof), sentence rhythm and length, word choice, how they land the CTA, what makes them feel human and native to the platform. These are exemplars of what works for THIS brand.
+PASS 2 — WINNING SCRIPTS: The folder also contains WINNING SCRIPTS the user has added (proven high-performing ad copy — .txt/.md files). Read each of them (skip .pdf/.docx — if a winning script is only in those formats, ask the user to re-save it as .txt so it doesn't overflow context). STUDY them as your model: how they open (hook style), how they build (problem → solution → proof), sentence rhythm and length, word choice, how they land the CTA, what makes them feel human and native to the platform. These are exemplars of what works for THIS brand.
 
 Then WRITE YOUR OWN original scripts that (a) obey every brand rule from Pass 1, and (b) follow the winning patterns you learned in Pass 2 — same voice, cadence, and structure, but fresh copy and a distinct angle per variant. Do NOT copy a winning script verbatim; learn from them and produce new work in the same style.
 
 If you cannot read the folder or it has neither brand docs nor scripts, STOP and report it — do NOT invent a brand from nothing.`
-  : (brandGuidelinesPath ? `Look for brand guidelines documents at \`${brandGuidelinesPath}\`. If the folder exists, read every .txt/.md/.pdf in it before drafting (including any winning example scripts — study their voice and structure). The variants MUST respect every constraint stated there — claims, terminology, voice, off-limits topics. If the folder doesn't exist or is empty, proceed using common-sense brand-safe defaults (no medical/legal claims, no competitor mentions, no superlatives without evidence) and note this in the report.` : `No asset root + team is set in the studio, so no brand-guidelines folder is available. Use common-sense brand-safe defaults (no medical/legal claims, no competitor mentions, no superlatives without evidence).`)}
+  : (brandGuidelinesPath ? `Look for brand guidelines documents at \`${brandGuidelinesPath}\`. If the folder exists, read only the .txt/.md files in it (at most ~12,000 characters total; do NOT open .pdf/.docx/images — they overflow context and crash the run) before drafting (including any winning example scripts — study their voice and structure). The variants MUST respect every constraint stated there — claims, terminology, voice, off-limits topics. If the folder doesn't exist or is empty, proceed using common-sense brand-safe defaults (no medical/legal claims, no competitor mentions, no superlatives without evidence) and note this in the report.` : `No asset root + team is set in the studio, so no brand-guidelines folder is available. Use common-sense brand-safe defaults (no medical/legal claims, no competitor mentions, no superlatives without evidence).`)}
 
 ${autoScript
   ? `━━━ NO SEED SCRIPT (auto mode) ━━━
@@ -5004,7 +5004,7 @@ The call-to-action must drive the viewer to CLICK/TAP THE AD ITSELF — never a 
 ━━━ LEGAL DISCLAIMERS (HARD — compliance, print-only, per variant) ━━━
 Some offers/claims legally REQUIRE a printed disclaimer. Disclaimers are PRINT ONLY — never spoken in the VO. You assemble the correct disclaimer string per variant and pass it as \`disclaimer_text\` in the JSON body; the helper burns it bottom-center in 18pt Arial black. If a variant triggers NONE of the rules below, omit \`disclaimer_text\`.
 
-1. **Read the brand folder for disclaimers first.** \`${brandGuidelinesPath || '(the team Guidelines folder)'}\` contains this brand's disclaimer language (in the brand book and/or a disclaimers doc). Read it. These EXACT trigger→disclaimer rules are mandatory and override any paraphrase:
+1. **Read the brand folder for disclaimers first.** \`${brandGuidelinesPath || '(the team Guidelines folder)'}\` contains this brand's disclaimer language. Read ONLY the .txt/.md files there (never open the raw .pdf/.docx brand book — it overflows context). These EXACT trigger→disclaimer rules are mandatory and override any paraphrase:
    - If the ad uses a **"Buy one get one 40% off"** offer → disclaimer MUST include: \`*minimum purchase of 4\`
    - If the ad uses financing, it MUST be worded EXACTLY: **"No money down, no monthly payments, no interest for 12 months"** (no exceptions, no rewording) → disclaimer MUST include: \`*interest accrues during promotional period but is waived if paid in full within 12 months\`
    - If the ad mentions **Fibrex**, it MUST be written **Fibrex®** (with the registered-trademark symbol) everywhere it appears (VO caption text AND on-screen), AND include the Fibrex disclaimer from the folder.
