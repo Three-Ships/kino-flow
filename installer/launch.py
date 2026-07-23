@@ -89,6 +89,21 @@ def ensure_venv(venv: Path, install_cmd: list[str], marker_import: str) -> None:
     subprocess.run([uv, "pip", "install", "--python", str(py), *install_cmd], check=True)
 
 
+def ensure_ffmpeg() -> None:
+    """ffmpeg must be reachable. The installer bundles it (added to PATH above);
+    as a fallback, install via Homebrew on macOS."""
+    if shutil.which("ffmpeg"):
+        return
+    if not IS_WIN:
+        brew = shutil.which("brew")
+        if brew:
+            log("installing ffmpeg via Homebrew (one time)…")
+            subprocess.run([brew, "install", "ffmpeg"], check=False)
+            return
+    log("WARNING: ffmpeg not found. Install it (Windows: winget install Gyan.FFmpeg; "
+        "macOS: brew install ffmpeg) and re-launch.")
+
+
 def ensure_claude_cli() -> None:
     if shutil.which("claude"):
         return
@@ -117,6 +132,7 @@ def main() -> None:
     ensure_venv(STUDIO / ".venv",
                 ["fastapi", "uvicorn[standard]", "python-multipart"],
                 marker_import="fastapi")
+    ensure_ffmpeg()
     ensure_claude_cli()
 
     studio_py = _venv_python(STUDIO / ".venv")

@@ -24,6 +24,19 @@ EDIT_DIR = VIDEOS_DIR / "edit"
 FINAL_DIR = PROJECT_ROOT / "Final Output"
 STATIC_DIR = Path(__file__).parent / "static"
 
+
+def _vu_python() -> Path:
+    """Path to the video-use venv's Python, per-OS (Scripts\\python.exe on
+    Windows, bin/python on macOS/Linux). Used for the server's direct helper
+    runs; the same relative form is injected as $VU_PY for the agent's shell."""
+    base = PROJECT_ROOT / "video-use" / ".venv"
+    return base / "Scripts" / "python.exe" if os.name == "nt" else base / "bin" / "python"
+
+
+# Relative form of the above, for prompts the agent runs (cwd = project root).
+VU_PY_REL = ("video-use/.venv/Scripts/python.exe" if os.name == "nt"
+             else "video-use/.venv/bin/python")
+
 # HARD cap on concurrent heavy renders (variant_factory ffmpeg/NVENC jobs).
 # Each render decodes large 4K/10-bit b-roll and runs an NVENC encode. On a
 # VRAM-limited laptop GPU (this box: RTX 5070 Laptop, 4 GB VRAM, 15 GB RAM),
@@ -62,6 +75,9 @@ def _claude_env() -> dict:
     shared-key gateway when configured, else returns the ambient environment
     unchanged (local claude auth)."""
     env = os.environ.copy()
+    # OS-correct path to the video-use Python, so agent prompts can call
+    # `$VU_PY helper.py` and work on both Windows and macOS.
+    env["VU_PY"] = VU_PY_REL
     if KINO_GATEWAY_URL:
         env["ANTHROPIC_BASE_URL"] = f"{KINO_GATEWAY_URL}/anthropic"
         # A stray local key would shadow the gateway routing — remove it.
@@ -1482,7 +1498,7 @@ async def timeline_manifest(run: str, video: str | None = None):
 
 
 _HELPERS_DIR = PROJECT_ROOT / "video-use" / "helpers"
-_HELPERS_PYTHON = PROJECT_ROOT / "video-use" / ".venv" / "Scripts" / "python.exe"
+_HELPERS_PYTHON = _vu_python()
 
 
 def _helpers_py() -> str:
@@ -2428,7 +2444,7 @@ async def manager_review():
 # ─────────────────────────────────────────────────────────────────────
 
 _HEYGEN_HELPER = PROJECT_ROOT / "video-use" / "helpers" / "heygen_video.py"
-_HEYGEN_PYTHON = PROJECT_ROOT / "video-use" / ".venv" / "Scripts" / "python.exe"
+_HEYGEN_PYTHON = _vu_python()
 # Cache the JSON listing on disk so repeat tab-opens don't re-hit HeyGen.
 _HEYGEN_CACHE_DIR = STATIC_DIR  # JSON files served as plain static assets, too
 
@@ -2521,7 +2537,7 @@ async def heygen_status():
 _STITCH_HELPER = PROJECT_ROOT / "video-use" / "helpers" / "stitch_script.py"
 _HOOK_HELPER = PROJECT_ROOT / "video-use" / "helpers" / "hook_overlay.py"
 _VARIANT_HELPER = PROJECT_ROOT / "video-use" / "helpers" / "variant_factory.py"
-_PYTHON_BIN = PROJECT_ROOT / "video-use" / ".venv" / "Scripts" / "python.exe"
+_PYTHON_BIN = _vu_python()
 
 
 @app.post("/api/stitch_script")

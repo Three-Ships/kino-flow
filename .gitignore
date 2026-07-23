@@ -69,3 +69,5 @@ installer/**/*.exe
 installer/**/*.dmg
 installer/windows/ffmpeg/
 installer/windows/kino.ico
+installer/mac/build/
+installer/**/*.icns

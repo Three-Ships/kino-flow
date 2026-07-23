@@ -1195,7 +1195,7 @@ function buildSyncPrompt({ apply }) {
     lines.push(`Detect the offset AND build the synced MP4:`);
     lines.push('```');
     lines.push(`PYTHONUTF8=1 PATH="$FFMPEG_DIR:$PATH" \\`);
-    lines.push(`  video-use/.venv/Scripts/python.exe \\`);
+    lines.push(`  $VU_PY \\`);
     lines.push(`  video-use/helpers/sync_audio.py \\`);
     lines.push(`  "${v}" "${a}" \\`);
     lines.push(`  --apply --out "${outPath}" --json`);
@@ -1211,7 +1211,7 @@ function buildSyncPrompt({ apply }) {
     lines.push(`Detect-only (don't bake an MP4 yet):`);
     lines.push('```');
     lines.push(`PYTHONUTF8=1 PATH="$FFMPEG_DIR:$PATH" \\`);
-    lines.push(`  video-use/.venv/Scripts/python.exe \\`);
+    lines.push(`  $VU_PY \\`);
     lines.push(`  video-use/helpers/sync_audio.py \\`);
     lines.push(`  "${v}" "${a}" --json`);
     lines.push('```');
@@ -1351,7 +1351,7 @@ function buildBatchSyncPrompt(folder, threshold) {
   lines.push(`**Match and sync in one pass — no approval gate, no dry run.** Run match_pairs.py with \`--apply\` directly:`);
   lines.push('```');
   lines.push(`PYTHONUTF8=1 PATH="$FFMPEG_DIR:$PATH" \\`);
-  lines.push(`  video-use/.venv/Scripts/python.exe \\`);
+  lines.push(`  $VU_PY \\`);
   lines.push(`  video-use/helpers/match_pairs.py \\`);
   lines.push(`  --folder "${winFolder}" \\`);
   lines.push(`  --threshold ${threshold} --audio-continuous --level-dialogue --apply --json`);
@@ -1505,7 +1505,7 @@ function buildPipelinePrompt({ video, audio, script, music, vo, freeform, brollM
     lines.push('');
     lines.push('```');
     lines.push('PYTHONUTF8=1 PATH="$FFMPEG_DIR:$PATH" \\');
-    lines.push('  video-use/.venv/Scripts/python.exe \\');
+    lines.push('  $VU_PY \\');
     lines.push('  video-use/helpers/sync_audio.py \\');
     lines.push(`  "${video}" \\`);
     lines.push(`  "${audio}" \\`);
@@ -1523,7 +1523,7 @@ function buildPipelinePrompt({ video, audio, script, music, vo, freeform, brollM
   // --- Step 0: VO generation (only when staged) ---
   if (pendingVo) {
     const cmdLines = [
-      'PYTHONUTF8=1 video-use/.venv/Scripts/python.exe \\',
+      'PYTHONUTF8=1 $VU_PY \\',
       '  video-use/helpers/tts_voice.py \\',
       `  --voice "${pendingVo.voiceId}" \\`,
       `  --output "${pendingVo.output}" \\`,
@@ -1724,11 +1724,11 @@ modeSplitHooks.addEventListener('change', () => {
 function buildSplitHooksPrompt(videoPath, freeform) {
   const stem = videoPath.split('/').pop().replace(/\.[^.]+$/, '');
   const transcribeCmd =
-    'PYTHONUTF8=1 video-use/.venv/Scripts/python.exe \\\n' +
+    'PYTHONUTF8=1 $VU_PY \\\n' +
     '  video-use/helpers/transcribe.py \\\n' +
     `  "${videoPath}"`;
   const splitCmd =
-    'PYTHONUTF8=1 video-use/.venv/Scripts/python.exe \\\n' +
+    'PYTHONUTF8=1 $VU_PY \\\n' +
     '  video-use/helpers/split_hooks.py \\\n' +
     `  "${videoPath}" \\\n` +
     '  --edl videos/edit/hooks_edl.json \\\n' +
@@ -1807,7 +1807,7 @@ voTextInput.addEventListener('input', refreshGenButtonState);
 voRefreshBtn.addEventListener('click', () => {
   // Pre-fill the chat with a one-liner that dumps voices.json into static/.
   const cmd =
-    'PYTHONUTF8=1 video-use/.venv/Scripts/python.exe ' +
+    'PYTHONUTF8=1 $VU_PY ' +
     'video-use/helpers/tts_voice.py ' +
     '--list-voices --json > studio/static/voices.json';
   promptInput.value =
@@ -1920,7 +1920,7 @@ $('#gen-music-btn').addEventListener('click', () => {
   const slug = brief.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 32);
   const outRel = `videos/music_${slug}_${Math.round(dur)}s.mp3`;
   const cmd =
-    'PYTHONUTF8=1 video-use/.venv/Scripts/python.exe ' +
+    'PYTHONUTF8=1 $VU_PY ' +
     'video-use/helpers/tts_music.py ' +
     `--prompt ${JSON.stringify(brief)} ` +
     `--duration ${dur} ` +
@@ -3406,7 +3406,7 @@ function buildGraphicsBlock() {
   lines.push('');
   lines.push('4. Run the helper:');
   lines.push('```');
-  lines.push('PYTHONUTF8=1 video-use/.venv/Scripts/python.exe \\');
+  lines.push('PYTHONUTF8=1 $VU_PY \\');
   lines.push('  video-use/helpers/graphics_overlay.py <input.mp4> \\');
   lines.push('  --edl videos/edit/graphics_edl.json \\');
   lines.push('  --output videos/edit/<input>_gfx.mp4 --json');
@@ -4539,7 +4539,7 @@ Generate a HeyGen talking-head avatar speaking the script. Use the exact \
 credentials saved in the Avatar tab. No approval gate, no preview — submit, poll, download.
 
 \`\`\`bash
-PYTHONUTF8=1 video-use/.venv/Scripts/python.exe \\
+PYTHONUTF8=1 $VU_PY \\
   video-use/helpers/heygen_video.py \\
   --avatar-id "${hgDiceState.avatarId || ''}" \\
   --voice-id "${hgDiceState.voiceId || ''}" \\
@@ -4945,7 +4945,7 @@ Each variant must OPEN with a HeyGen talking-head avatar speaking ONLY that vari
 
 1. **Avatar hook clip.** Render the hook line via HeyGen using the avatar + voice the user picked in the Avatar tab. Run the helper directly (submit → poll → download, no gates):
 \`\`\`bash
-PYTHONUTF8=1 video-use/.venv/Scripts/python.exe \\
+PYTHONUTF8=1 $VU_PY \\
   video-use/helpers/heygen_video.py \\
   --avatar-id "${hgVar.avatarId || ''}" \\
   --voice-id "${hgVar.voiceId || ''}" \\
@@ -5433,7 +5433,7 @@ End with: total wall time, average ElevenLabs character spend, and any rejected/
     lines.push('Run the helper directly. It submits the render to HeyGen, polls every 8s, and downloads the result on completion. No preview gate, no permission ask.');
     lines.push('');
     lines.push('```bash');
-    lines.push('PYTHONUTF8=1 video-use/.venv/Scripts/python.exe \\');
+    lines.push('PYTHONUTF8=1 $VU_PY \\');
     lines.push('  video-use/helpers/heygen_video.py \\');
     lines.push(`  --avatar-id "${hg.avatarId}" \\`);
     lines.push(`  --voice-id "${hg.voiceId}" \\`);
