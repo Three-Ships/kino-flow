@@ -10,13 +10,27 @@
   <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="/apple-touch-icon.png" />
   <link rel="stylesheet" href="/style.css?v=20260720c" />
   <script src="https://unpkg.com/split.js@1.6.5/dist/split.min.js"></script>
+  <!-- Simple mode: hides WIP features (each marked data-simple-hide) so the app
+       ships focused on Variants + Streamlined Ads. Fully reversible — nothing is
+       deleted. Add ?full=1 to the URL (or set localStorage.kino_full='1') to
+       reveal the complete studio again. -->
+  <style>.simple-mode [data-simple-hide]{display:none !important;}</style>
+  <script>
+    (function(){
+      try{
+        var full = new URLSearchParams(location.search).has('full')
+                || localStorage.getItem('kino_full')==='1';
+        if(!full) document.documentElement.classList.add('simple-mode');
+      }catch(e){ document.documentElement.classList.add('simple-mode'); }
+    })();
+  </script>
 </head>
 <body>
 
   <!-- ═══════════════════════════════════════ SIDEBAR NAV ═════ -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
-      <img class="sb-logo-img" src="/kinokore-logo.png" alt="Kino Flow 1.0" />
+      <img class="sb-logo-img" src="/kinoflow-logo.png" alt="Kino Flow 1.0" />
       <div class="sb-titles">
         <span class="sb-name">Kino Flow</span>
         <span class="sb-sub">1.0</span>
@@ -48,8 +62,8 @@
       </div>
     </div>
 
-    <!-- ── ROLL THE DICE ── -->
-    <div class="dice-zone">
+    <!-- ── ROLL THE DICE ── (hidden in simple mode; WIP) -->
+    <div class="dice-zone" data-simple-hide>
       <button id="roll-dice-btn" type="button" class="dice-btn" title="Autonomously compose a full video from your asset folders — no input needed">
         <span class="dice-icon" aria-hidden="true">🎲</span>
         <span class="dice-label">Roll the Dice</span>
@@ -109,24 +123,24 @@
         <button class="tab active" data-tab="chat"     type="button"><span class="si">💬</span>Chat</button>
         <button class="tab"        data-tab="files"    type="button"><span class="si">📁</span>Files</button>
 
-        <span class="topnav-sep"></span>
-        <span class="topnav-group">Pipeline</span>
-        <button class="tab"        data-tab="captions" type="button"><span class="si">📝</span>Captions</button>
-        <button class="tab"        data-tab="graphics" type="button"><span class="si">✦</span>Graphics</button>
-        <button class="tab"        data-tab="broll"    type="button"><span class="si">🎬</span>B-Roll</button>
-        <button class="tab"        data-tab="music"    type="button"><span class="si">🎵</span>Music</button>
-        <button class="tab"        data-tab="avatar"   type="button"><span class="si">👤</span>Avatar</button>
+        <span class="topnav-sep"      data-simple-hide></span>
+        <span class="topnav-group"    data-simple-hide>Pipeline</span>
+        <button class="tab" data-simple-hide data-tab="captions" type="button"><span class="si">📝</span>Captions</button>
+        <button class="tab" data-simple-hide data-tab="graphics" type="button"><span class="si">✦</span>Graphics</button>
+        <button class="tab" data-simple-hide data-tab="broll"    type="button"><span class="si">🎬</span>B-Roll</button>
+        <button class="tab" data-simple-hide data-tab="music"    type="button"><span class="si">🎵</span>Music</button>
+        <button class="tab" data-simple-hide data-tab="avatar"   type="button"><span class="si">👤</span>Avatar</button>
 
-        <span class="topnav-sep"></span>
-        <span class="topnav-group">Gen AI</span>
-        <button class="tab"        data-tab="genai"    type="button"><span class="si">🪄</span>Gen AI</button>
+        <span class="topnav-sep"      data-simple-hide></span>
+        <span class="topnav-group"    data-simple-hide>Gen AI</span>
+        <button class="tab" data-simple-hide data-tab="genai"    type="button"><span class="si">🪄</span>Gen AI</button>
 
         <span class="topnav-sep"></span>
         <span class="topnav-group">History</span>
-        <button class="tab"        data-tab="sessions" type="button"><span class="si">💾</span>Sessions</button>
+        <button class="tab" data-simple-hide data-tab="sessions" type="button"><span class="si">💾</span>Sessions</button>
         <button class="tab"        data-tab="jobs"     type="button"><span class="si">⚡</span>Jobs</button>
-        <button class="tab"        data-tab="manager"  type="button"><span class="si">📋</span>Manager<span class="tab-badge" id="manager-badge" hidden>0</span></button>
-        <button class="tab"        data-tab="logs"     type="button"><span class="si">📡</span>Logs<span class="tab-badge" id="logs-badge" hidden>0</span></button>
+        <button class="tab" data-simple-hide data-tab="manager"  type="button"><span class="si">📋</span>Manager<span class="tab-badge" id="manager-badge" hidden>0</span></button>
+        <button class="tab" data-simple-hide data-tab="logs"     type="button"><span class="si">📡</span>Logs<span class="tab-badge" id="logs-badge" hidden>0</span></button>
       </nav>
       <div class="header-meta">
         <div class="usage" id="usage-prompt" title="this turn — resets when you send">
