@@ -59,3 +59,11 @@ color-quiz/
 # ─── Cloudflare Worker gateway ────────────────────────────
 .dev.vars
 .wrangler/
+
+# ─── Installer (secrets + build outputs never committed) ──
+installer/config.local.json
+installer/kino.config.json
+installer/**/dist/
+installer/**/output/
+installer/**/*.exe
+installer/**/*.dmg

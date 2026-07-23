@@ -367,8 +367,21 @@ def main() -> None:
         cmd += ["-map", "[outa]", "-c:a", "aac", "-b:a", "192k"]
     else:
         cmd += ["-an"]
-    cmd += ["-t", f"{total:.3f}", "-c:v", "h264_nvenc", "-preset", "p5", "-cq", "19",
-            "-pix_fmt", "yuv420p", str(args.output)]
+    # Pick a video encoder adaptively so ads render on ANY machine — NVENC on
+    # NVIDIA, else libx264 CPU (Mac, AMD/Intel, or GPU-less). 8-bit 4:2:0 High@4.2
+    # is pinned for universal playback (same as variant_factory).
+    try:
+        from render import select_encoder  # type: ignore
+        _enc = select_encoder()
+    except Exception:
+        _enc = "x264"
+    if _enc.startswith("nvenc"):
+        _venc = ["-c:v", "h264_nvenc", "-preset", "p5", "-cq", "19",
+                 "-pix_fmt", "yuv420p", "-profile:v", "high", "-level", "4.2"]
+    else:
+        _venc = ["-c:v", "libx264", "-preset", "medium", "-crf", "19",
+                 "-pix_fmt", "yuv420p", "-profile:v", "high", "-level", "4.2"]
+    cmd += ["-t", f"{total:.3f}"] + _venc + [str(args.output)]
 
     print(f"[render] {args.format} ad · {total:.1f}s · bg={background.name}"
           + (f" · music={music.name}" if music else ""), file=sys.stderr)

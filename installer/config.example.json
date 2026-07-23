@@ -1,0 +1,5 @@
+{
+  "_comment": "Kino Flow install-time config. Copy to config.local.json (gitignored) and fill in. The build bakes these into the installer so end users enter nothing. NEVER commit real values — the repo is public.",
+  "gateway_url": "https://kino-flow-gateway.hskinoflow.workers.dev",
+  "gateway_token": "PASTE_YOUR_GATEWAY_TOKEN_HERE"
+}
