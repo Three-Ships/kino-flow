@@ -14,18 +14,17 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
-FFMPEG = (
-    r"C:\Users\seanh\AppData\Local\Microsoft\WinGet\Packages"
-    r"\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe"
-    r"\ffmpeg-8.1-full_build\bin\ffmpeg.exe"
-)
-FFPROBE = FFMPEG.replace("ffmpeg.exe", "ffprobe.exe")
+# Use ffmpeg/ffprobe on PATH (the launcher puts the bundled binary there);
+# cross-platform. Was a hardcoded Windows path (Caio's macOS report).
+FFMPEG = shutil.which("ffmpeg") or "ffmpeg"
+FFPROBE = shutil.which("ffprobe") or "ffprobe"
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 EDIT_DIR = _PROJECT_ROOT / "videos" / "edit"

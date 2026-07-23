@@ -57,7 +57,22 @@ def _render_semaphore() -> "asyncio.Semaphore":
         _render_sem = asyncio.Semaphore(MAX_CONCURRENT_RENDERS)
     return _render_sem
 
-CLAUDE_BIN = os.environ.get("CLAUDE_BIN") or shutil.which("claude") or r"C:\Users\seanh\AppData\Roaming\npm\claude.cmd"
+
+# Proxy builds must be SERIALIZED (not just capped at 2), or two concurrent
+# requests transcode the same clip to the same temp path and collide → 500 with
+# orphaned .tmp.mp4 files (Caio's macOS report). Since proxy builds are
+# idempotent, the second caller waits then finds the proxy already built.
+_proxy_lock: "asyncio.Lock | None" = None
+
+
+def _proxy_build_lock() -> "asyncio.Lock":
+    global _proxy_lock
+    if _proxy_lock is None:
+        _proxy_lock = asyncio.Lock()
+    return _proxy_lock
+
+CLAUDE_BIN = (os.environ.get("CLAUDE_BIN") or shutil.which("claude")
+              or (r"C:\Users\seanh\AppData\Roaming\npm\claude.cmd" if os.name == "nt" else "claude"))
 
 # ── Shared-key gateway (production distribution) ─────────────────────
 # In the distributed desktop app the user's machine must NOT hold the real
@@ -68,6 +83,21 @@ CLAUDE_BIN = os.environ.get("CLAUDE_BIN") or shutil.which("claude") or r"C:\User
 # exactly as before, so this change is a no-op until the gateway is deployed.
 KINO_GATEWAY_URL = os.environ.get("KINO_GATEWAY_URL", "").rstrip("/")
 KINO_GATEWAY_TOKEN = os.environ.get("KINO_GATEWAY_TOKEN", "")
+
+# Dev convenience (per Caio's macOS report): when the gateway env isn't set —
+# e.g. running `uvicorn server:app` directly instead of via installer/launch.py —
+# fall back to the local build config so provider-key steps (Variants TTS,
+# avatars, gen) still work. The packaged app sets the env in launch.py, so this
+# branch is a no-op there.
+if not KINO_GATEWAY_URL:
+    try:
+        _gcfg = json.loads((PROJECT_ROOT / "installer" / "config.local.json").read_text(encoding="utf-8"))
+        _gu = (_gcfg.get("gateway_url") or "").strip().rstrip("/")
+        _gt = (_gcfg.get("gateway_token") or "").strip()
+        if _gu and not _gt.startswith("PASTE_"):
+            KINO_GATEWAY_URL, KINO_GATEWAY_TOKEN = _gu, _gt
+    except Exception:  # noqa: BLE001
+        pass
 
 
 def _claude_env() -> dict:
@@ -322,8 +352,7 @@ async def chat(
     if not CLAUDE_BIN or not Path(CLAUDE_BIN).exists():
         raise HTTPException(500, f"claude CLI not found at {CLAUDE_BIN}")
 
-    args = [CLAUDE_BIN, "--print", "--output-format", "stream-json", "--verbose",
-            "--permission-mode", "acceptEdits"]
+    args = [CLAUDE_BIN, "--print", "--output-format", "stream-json", "--verbose"]
 
     # ── Model routing (Workstream A1) ──
     # Accepts CLI shortcuts ('opus'/'sonnet'/'haiku') or full model IDs.
@@ -336,6 +365,14 @@ async def chat(
     head = prompt[:200].upper()
     is_autonomous = any(m in head for m in (
         "VARIANT FACTORY", "STREAMLINED AD", "ROLL THE DICE"))
+
+    # Permission mode. Autonomous, pre-authorized generation (the user clicked
+    # Generate) runs with bypassPermissions so it works in the packaged app with
+    # NO reliance on a .claude/settings.local.json allowlist (which isn't in the
+    # bundle). Interactive chat keeps acceptEdits (auto-accept edits, prompt for
+    # other actions). Fix per Caio's macOS build report, 2026-07-23.
+    args += ["--permission-mode",
+             "bypassPermissions" if is_autonomous else "acceptEdits"]
 
     # Precedence: explicit --resume <id> > --continue > fresh session.
     if resume_session_id:
@@ -895,14 +932,23 @@ async def set_output_dir(payload: dict):
 @app.get("/api/fs/roots")
 async def fs_roots():
     """List drive letters on Windows or `/` on POSIX, plus pinned shortcuts."""
+    _ar = detect_asset_root()
     pinned = []
     for label, path in [
-        ("project",  PROJECT_ROOT),
-        ("videos",   VIDEOS_DIR),
-        ("edit",     EDIT_DIR),
+        ("Home",           Path.home()),
+        ("Desktop",        Path.home() / "Desktop"),
+        ("Downloads",      Path.home() / "Downloads"),
+        ("Assets (Drive)", Path(_ar) if _ar else None),
+        ("Output",         output_root()),
+        ("project",        PROJECT_ROOT),
+        ("videos",         VIDEOS_DIR),
+        ("edit",           EDIT_DIR),
     ]:
-        if path.exists():
-            pinned.append({"label": label, "path": str(path).replace("\\", "/")})
+        try:
+            if path and path.exists():
+                pinned.append({"label": label, "path": str(path).replace("\\", "/")})
+        except OSError:
+            continue
 
     drives = []
     if os.name == "nt":
@@ -2760,12 +2806,14 @@ async def broll_proxies(payload: dict):
 
     cmd = [str(_PYTHON_BIN), str(_VARIANT_HELPER),
            "--broll-folder", str(folder_path), "--build-proxies", "--json"]
-    async with _render_semaphore():
-        proc = await asyncio.create_subprocess_exec(
-            *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
-            cwd=str(PROJECT_ROOT),
-        )
-        stdout_b, stderr_b = await proc.communicate()
+    # Serialize proxy builds (lock) AND keep them off concurrent renders (sem).
+    async with _proxy_build_lock():
+        async with _render_semaphore():
+            proc = await asyncio.create_subprocess_exec(
+                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+                cwd=str(PROJECT_ROOT),
+            )
+            stdout_b, stderr_b = await proc.communicate()
     stdout = stdout_b.decode("utf-8", errors="replace")
     stderr = stderr_b.decode("utf-8", errors="replace")
     if proc.returncode != 0:
